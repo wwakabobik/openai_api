@@ -4,6 +4,7 @@ ChatGPT:
 - Add logging
 - Add history save & load (pickle, database, etc.)
 - Split up GPT class into several classes and files (transcript, translate, completion, etc.)
+- Add statistics logging 
 
 DALL-E2:
 - Add synchronous library (requests)

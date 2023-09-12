@@ -236,7 +236,7 @@ class DALLE:
             filename = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4()}.{file_format.lower()}")
         try:
             image.save(filename, format=format)
-        except Exception as error:
+        except Exception as error:  # pylint: disable=W0718
             print(f"Can't save image: {error}")
             return None
         return filename

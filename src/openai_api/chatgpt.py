@@ -269,6 +269,7 @@ class ChatGPT:
         self.___prompt_method = prompt_method
         self.___set_auth(auth_token, organization)
         self.___logger = logger
+        # pylint: disable=unused-private-member
         self.___statistics = statistics
         self.___system_settings = system_settings if system_settings else ""
 
