@@ -10,5 +10,5 @@ Last Modified: 12.09.2023
 Description:
 This file contains module init
 """
-from chatgpt import ChatGPT
-from dalle import DALLE
+from .openai_api.chatgpt import ChatGPT
+from .openai_api.dalle import DALLE

@@ -15,4 +15,4 @@ General:
 - Add README.md
 - Add Pull Request template
 - Add CONTRIBUTING.md
-- 
+- Add typings in according to mypy

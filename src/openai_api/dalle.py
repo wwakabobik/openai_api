@@ -187,7 +187,7 @@ class DALLE:
 
         :return: list of URLs
         """
-        image_urls = list()
+        image_urls = []
         for items in await self.create_image(prompt):
             image_urls.append(items["url"])
         return image_urls

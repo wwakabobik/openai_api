@@ -654,6 +654,7 @@ class ChatGPT:
         :return: Returns answers by chunk if 'stream' is false True, otherwise return complete answer.
         """
         # pylint: disable=too-many-branches
+        # pylint: disable=too-many-statements
         # Prepare parameters
         params = {
             "model": self.model,
@@ -680,7 +681,7 @@ class ChatGPT:
 
         # Get response
         func_response = None
-        func_call = dict()
+        func_call = {}
         if self.stream:
             try:
                 async for chunk in await openai.ChatCompletion.acreate(**params):
@@ -714,7 +715,7 @@ class ChatGPT:
                     # Add new prompt
                     if self.prompt_method:
                         params.pop("prompt", None)
-                        params["messages"] = list()
+                        params["messages"] = []
                         params["messages"].append(func_response)
                     else:
                         params["messages"].append(func_response)
@@ -738,7 +739,7 @@ class ChatGPT:
                     # Add new prompt
                     if self.prompt_method:
                         params.pop("prompt", None)
-                        params["messages"] = list()
+                        params["messages"] = []
                         params["messages"].append(func_response)
                     else:
                         params["messages"].append(func_response)
