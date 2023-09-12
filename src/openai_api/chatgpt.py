@@ -695,7 +695,7 @@ class ChatGPT:
                             else:
                                 func_call[key] = value
                     if chunk["choices"][default_choice]["finish_reason"] is not None:
-                        if chunk["choices"][default_choice]["finish_reason"] == 'function_call':
+                        if chunk["choices"][default_choice]["finish_reason"] == "function_call":
                             func_response = await self.process_function(function_call=func_call)
                         break
                     if "content" in chunk["choices"][default_choice]["delta"]:
@@ -727,7 +727,7 @@ class ChatGPT:
                 pass
         else:
             response = await openai.ChatCompletion.acreate(**params)
-            if response["choices"][default_choice]["finish_reason"] == 'function_call':
+            if response["choices"][default_choice]["finish_reason"] == "function_call":
                 func_response = await self.process_function(
                     function_call=response["choices"][default_choice]["message"]["function_call"]
                 )
@@ -801,7 +801,7 @@ class ChatGPT:
             # Add new message to chat
             self.chats[chat_name].append({"role": "user", "content": prompt})
             # Get last 'history_length' messages
-            messages = self.chats[chat_name][-self.history_length:]
+            messages = self.chats[chat_name][-self.history_length :]
             messages.insert(0, {"role": "system", "content": self.system_settings})
 
             try:
@@ -892,7 +892,11 @@ class ChatGPT:
         if prompt is not None:
             kwargs["prompt"] = prompt
         return await openai.Audio.atranslate(
-            model=TRANSLATIONS[0], file=file, response_format=response_format, temperature=self.temperature, **kwargs
+            model=TRANSLATIONS[0],
+            file=file,
+            response_format=response_format,
+            temperature=self.temperature,
+            **kwargs,
         )
 
     async def process_function(self, function_call):

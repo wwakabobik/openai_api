@@ -218,8 +218,7 @@ class DALLE:
         async for items in await self.create_image(prompt):
             task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
             tasks.append(task)
-        image_data = await asyncio.gather(*tasks)
-        return image_data
+        return await asyncio.gather(*tasks)
 
     def save_image(self, image, filename=None, file_format=None):
         """Saves an image to a file.
