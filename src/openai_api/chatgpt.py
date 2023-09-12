@@ -8,7 +8,7 @@ Created: 25.08.2023
 Last Modified: 26.08.2023
 
 Description:
-This file contains implementation for ChatGPT
+This file contains implementation for ChatGPT.
 """
 
 import json
@@ -16,7 +16,7 @@ import logging
 
 import openai
 
-from openai_engine.models import COMPLETIONS, TRANSCRIPTIONS, TRANSLATIONS
+from .models import COMPLETIONS, TRANSCRIPTIONS, TRANSLATIONS
 
 
 class GPTStatistics:

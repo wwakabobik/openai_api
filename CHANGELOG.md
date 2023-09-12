@@ -8,5 +8,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1] - 2023-09-12
 
 ### Added
-- ChatGPT engine (ChatCompletion)
-- DALL-E2 engine (ImageGeneration)
+- ChatGPT engine (ChatCompletion, Functions)
+- DALL-E2 engine

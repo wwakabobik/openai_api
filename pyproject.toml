@@ -1,3 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openai_api"
+version = "0.1.0"
+authors = [
+  { name="Iliya Vereshchagin", email="i.vereshchagin@gmail.com" },
+]
+description = "OpenAI Python API"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+dependencies = [
+    'requests',
+    'aiohttp',
+    'aiofiles',
+    'asyncio',
+    'requests',
+    'urllib3',
+    'async-timeout',
+    'certifi',
+    'charset-normalizer',
+    'frozenlist',
+    'pillow',
+    'openai'
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+install_requires = [
+    'requests',
+    'aiohttp',
+    'aiofiles',
+    'asyncio',
+    'requests',
+    'urllib3',
+    'async-timeout',
+    'certifi',
+    'charset-normalizer',
+    'frozenlist',
+    'pillow',
+    'openai'
+]
+
+[project.urls]
+"Homepage" = "https://github.com/wwakabobik/openai_api"
+"Bug Tracker" = "https://github.com/wwakabobik/openai_api/issues"
+
+
 [tool.black]
 line-length = 120
 

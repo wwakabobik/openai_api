@@ -14,8 +14,6 @@ This file contains configuration for loggers.
 import logging
 import sys
 
-from utils.other import is_heroku_environment
-
 
 def setup_logger(name: str, log_file: str, level=logging.DEBUG):
     """
@@ -38,8 +36,7 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG):
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
-    if not is_heroku_environment():
-        logger.addHandler(file_handler)
+    logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
 
     return logger

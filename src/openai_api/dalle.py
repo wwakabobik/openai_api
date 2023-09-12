@@ -8,8 +8,10 @@ Created: 25.08.2023
 Last Modified: 26.08.2023
 
 Description:
-This file contains implementation for DALL-E
+This file contains implementation for DALL-E2.
 """
+
+import asyncio
 import logging
 import os
 import tempfile
@@ -17,7 +19,6 @@ import uuid
 from io import BytesIO
 
 import aiohttp
-import asyncio
 import openai
 from PIL import Image
 
@@ -178,19 +179,6 @@ class DALLE:
         )
         return response["data"]
 
-    def screate_image(self, prompt):  # FIXME let it be till experiment, then remove
-        """
-        Creates an image using DALL-E Image API.
-
-        :param prompt: The prompt to be used for image creation.
-
-        :return: A PIL.Image object created from the image data received from the API.
-        """
-        response = openai.Image.create(
-            prompt=prompt, n=self.default_count, size=self.default_size, user=self.user
-        )
-        return response["data"]
-
     async def create_image_url(self, prompt):
         """
         Creates an image using DALL-E Image API, returns list of URLs with images.
@@ -201,20 +189,7 @@ class DALLE:
         """
         image_urls = list()
         for items in await self.create_image(prompt):
-            image_urls.append(items['url'])
-        return image_urls
-
-    def screate_image_url(self, prompt):  # FIXME let it be till experiment, then remove
-        """
-        Creates an image using DALL-E Image API, returns list of URLs with images. (SYNC)
-
-        :param prompt: The prompt to be used for image creation.
-
-        :return: list of URLs
-        """
-        image_urls = list()
-        for items in self.screate_image(prompt):
-            image_urls.append(items['url'])
+            image_urls.append(items["url"])
         return image_urls
 
     @staticmethod
@@ -241,19 +216,10 @@ class DALLE:
         """
         tasks = []
         async for items in await self.create_image(prompt):
-            task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items['url']))
+            task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
             tasks.append(task)
         image_data = await asyncio.gather(*tasks)
         return image_data
-
-    @staticmethod
-    def show_image(image):
-        """
-        Shows image interactively.
-
-        :param image: image object.
-        """
-        image.show()
 
     def save_image(self, image, filename=None, file_format=None):
         """Saves an image to a file.
