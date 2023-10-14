@@ -602,10 +602,6 @@ class ChatGPT:
                     if "content" in chunk["choices"][default_choice]["delta"]:
                         if chunk["choices"][default_choice]["delta"]["content"]:
                             yield chunk
-                        else:
-                            continue
-                    else:
-                        continue
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
             try:
@@ -696,11 +692,11 @@ class ChatGPT:
             # Add new message to chat
             self.chats[chat_name].append({"role": "user", "content": prompt})
             # Get last 'history_length' messages
-            messages = self.chats[chat_name][-self.history_length :]
+            messages = self.chats[chat_name][-self.history_length :]  # flake8: noqa : E203
             messages.insert(0, {"role": "system", "content": f"{self.system_settings} {extra_settings}"})
 
             try:
-                async for prompt_response in self.process_chat(
+                async for prompt_response in self.process_chat(  # flake8: noqa : WPS352
                     prompt=messages, default_choice=default_choice, chat_name=chat_name
                 ):
                     if isinstance(prompt_response, dict):
@@ -913,12 +909,11 @@ class ChatGPT:
                 self.___chat_name_length,
                 chat_name,
             )
-        else:
-            if len(chat_name) > self.___chat_name_length:
-                self.___logger.debug(
-                    "Chat name is longer than %s characters, truncating it: %s", self.___chat_name_length, chat_name
-                )
-                chat_name = chat_name[: self.___chat_name_length]
+        elif len(chat_name) > self.___chat_name_length:
+            self.___logger.debug(
+                "Chat name is longer than %s characters, truncating it: %s", self.___chat_name_length, chat_name
+            )
+            chat_name = chat_name[: self.___chat_name_length]
         if chat_name not in self.chats:
             self.___logger.debug("Chat name '%s' is not present in self.chats, adding it", chat_name)
             self.chats[chat_name] = []
