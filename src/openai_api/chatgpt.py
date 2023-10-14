@@ -220,7 +220,7 @@ class ChatGPT:
         logger: Optional[logging.Logger] = None,
         statistics: GPTStatistics = GPTStatistics(),
         system_settings: Optional[str] = None,
-        function_dict: dict = None,
+        function_dict: Optional[dict] = None,
     ):
         """
         General init
