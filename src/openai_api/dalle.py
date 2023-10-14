@@ -25,7 +25,7 @@ from PIL import Image
 
 class DALLE:
     """
-    The ChatGPT class is for managing an instance of the ChatGPT model.
+    The DALLE class is for managing an instance of the DALLE model.
 
     Parameters:
     auth_token (str): Authentication bearer token. Required.
@@ -235,7 +235,7 @@ class DALLE:
         if filename is None:
             filename = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4()}.{file_format.lower()}")
         try:
-            image.save(filename, format=format)
+            image.save(filename)
         except Exception as error:  # pylint: disable=W0718
             print(f"Can't save image: {error}")
             return None
