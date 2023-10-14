@@ -220,7 +220,7 @@ with open("robocop.jpg", "rb") as image_file:
 variated_image2 = dalle.create_variation_from_url(url=night_city_url)  # return of bytes format
 ```
 
-![Robocop](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/robocop_1.png) ![Robocop variation](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/robocop_1.png)
+![Robocop](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/robocop_1.png) ![Robocop variation](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/robocop_2.png)
 
 
 ## Additional notes
