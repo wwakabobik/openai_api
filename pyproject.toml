@@ -3,15 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "openai_api"
-version = "0.0.2"
+name = "openai-python-api"
+version = "0.0.3"
+keywords = ["openai", "chatgpt", "dalle", "dalle2", "ai", "artificial intelligence", "api", "gpt"]
 authors = [
   { name="Iliya Vereshchagin", email="i.vereshchagin@gmail.com" },
 ]
 description = "OpenAI Python API"
 readme = "README.md"
 license = { file="LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     'requests',
     'aiohttp',
@@ -27,7 +28,9 @@ dependencies = [
     'openai'
 ]
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
