@@ -16,3 +16,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - JSON dumper for chats and settings
 - Added detailed readme
+- Added logger
