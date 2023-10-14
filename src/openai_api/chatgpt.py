@@ -14,6 +14,7 @@ This file contains implementation for ChatGPT.
 import json
 import logging
 from uuid import uuid4
+from typing import Optional
 
 import openai
 
@@ -204,21 +205,21 @@ class ChatGPT:
         temperature: float = 1,
         top_p: float = 1,
         stream: bool = False,
-        stop: str = None,
+        stop: Optional[str] = None,
         max_tokens: int = 1024,
         presence_penalty: float = 0,
         frequency_penalty: float = 0,
-        logit_bias: map = None,
+        logit_bias: Optional[map] = None,
         user: str = "",
-        functions: list = None,
-        function_call: str = None,
+        functions: Optional[list] = None,
+        function_call: Optional[str] = None,
         history_length: int = 5,
-        chats: dict = None,
-        current_chat: str = None,
+        chats: Optional[dict] = None,
+        current_chat: Optional[str] = None,
         prompt_method: bool = False,
-        logger: logging.Logger = None,
+        logger: Optional[logging.Logger] = None,
         statistics: GPTStatistics = GPTStatistics(),
-        system_settings: str = None,
+        system_settings: Optional[str] = None,
         function_dict: dict = None,
     ):
         """
@@ -269,7 +270,7 @@ class ChatGPT:
         self.___current_chat = current_chat
         self.___prompt_method = prompt_method
         self.___set_auth(auth_token, organization)
-        self.___statistics = statistics
+        self.___statistics = statistics  # pylint: disable=W0238
         self.___system_settings = system_settings if system_settings else ""
 
     def ___set_auth(self, token, organization):

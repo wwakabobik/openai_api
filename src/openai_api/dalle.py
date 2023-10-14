@@ -17,6 +17,7 @@ import os
 import tempfile
 import uuid
 from io import BytesIO
+from typing import Optional
 
 import aiohttp
 import openai
@@ -47,7 +48,7 @@ class DALLE:
         default_size: str = "512x512",
         default_file_format: str = "PNG",
         user: str = "",
-        logger: logging.Logger = None,
+        logger: Optional[logging.Logger] = None,
     ):
         """
         General init
