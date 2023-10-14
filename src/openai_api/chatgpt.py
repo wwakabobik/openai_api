@@ -5,7 +5,7 @@ Author: Iliya Vereshchagin
 Copyright (c) 2023. All rights reserved.
 
 Created: 25.08.2023
-Last Modified: 26.08.2023
+Last Modified: 14.10.2023
 
 Description:
 This file contains implementation for ChatGPT.
