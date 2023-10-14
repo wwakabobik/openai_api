@@ -4,6 +4,7 @@ This package provides a Python API for [OpenAI](https://openai.com/), based on t
 
 ## Installation
 
+Package based on Python 3.9 and might be incompatible with older versions.
 To install the package, use the package from [pypi](https://pypi.org/project/openai-api/):
 
 ```bash
