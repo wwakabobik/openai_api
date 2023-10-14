@@ -2,7 +2,7 @@
 
 This package provides a Python API for [OpenAI](https://openai.com/), based on the official [API documentation](https://openai.com/blog/openai-api) and wraps-up original [OpenAI API](https://pypi.org/project/openai/).
 
-[![PyPI version](https://badge.fury.io/py/openai-api.svg)](https://badge.fury.io/py/openai-api) [![Linters](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml/badge.svg?branch=master)](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml)
+[![PyPI version](https://badge.fury.io/py/openai-python-api.svg)](https://badge.fury.io/py/openai-python-api) [![Linters](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml/badge.svg?branch=master)](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml)
 
 ## Installation
 
@@ -66,7 +66,7 @@ chatgpt.model.top_p = 0.9
 
 Here is a difference between `prompt_method=True` and `prompt_method=False` wih message history:
 
-![Chat response differences](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/difference_propmpt.gif)
+![Chat response differences](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/difference_prompt.gif)
 
 ### Managing chats
 
