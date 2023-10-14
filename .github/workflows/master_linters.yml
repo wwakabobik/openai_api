@@ -35,6 +35,7 @@ jobs:
       continue-on-error: true
       run: |
         mkdir -p .mypy_cache
+        find . -name '*.py'
         PYTHONPATH=. mypy $(find . -name '*.py') --install-types --non-interactive --ignore-missing-imports --exclude __main__.py
     - name: Check code with flake8
       id: flake8
