@@ -587,7 +587,7 @@ class ChatGPT:
             try:
                 async for chunk in await openai.ChatCompletion.acreate(**params):
                     if "function_call" in chunk["choices"][default_choice]["delta"]:
-                        raw_call = chunk["choices"][default_choice]["delta"]["function_call"]  # noqa : WPS529
+                        raw_call = chunk["choices"][default_choice]["delta"]["function_call"]  # noqa: WPS529
                         for key, value in raw_call.items():
                             if key in func_call and isinstance(value, str):
                                 func_call[key] += value
@@ -600,7 +600,7 @@ class ChatGPT:
                             func_response = await self.process_function(function_call=func_call)
                         break
                     if "content" in chunk["choices"][default_choice]["delta"]:
-                        if chunk["choices"][default_choice]["delta"]["content"]:  # noqa : WPS529
+                        if chunk["choices"][default_choice]["delta"]["content"]:  # noqa: WPS529
                             yield chunk
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
@@ -692,11 +692,11 @@ class ChatGPT:
             # Add new message to chat
             self.chats[chat_name].append({"role": "user", "content": prompt})
             # Get last 'history_length' messages
-            messages = self.chats[chat_name][-self.history_length :]  # noqa : E203
+            messages = self.chats[chat_name][-self.history_length :]  # noqa: E203
             messages.insert(0, {"role": "system", "content": f"{self.system_settings} {extra_settings}"})
 
             try:
-                async for prompt_response in self.process_chat(  # noqa : WPS352
+                async for prompt_response in self.process_chat(  # noqa: WPS352
                     prompt=messages, default_choice=default_choice, chat_name=chat_name
                 ):
                     if isinstance(prompt_response, dict):

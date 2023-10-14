@@ -211,7 +211,7 @@ class DALLE:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
-                image_data = self.___convert_to_RGBA(image_data)
+                image_data = self.___convert_to_rgba(image_data)
         self.___logger.debug("Image converted from URL %s to bytes format", url)
         return Image.open(BytesIO(image_data))
 
@@ -314,7 +314,7 @@ class DALLE:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
-                image_data = self.___convert_to_RGBA(image_data)
+                image_data = self.___convert_to_rgba(image_data)
 
         response = await openai.Image.acreate_variation(
             image=BytesIO(image_data), n=self.default_count, size=self.default_size, user=self.user
@@ -384,7 +384,7 @@ class DALLE:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
-                image_data = self.___convert_to_RGBA(image_data)
+                image_data = self.___convert_to_rgba(image_data)
 
         mask_data = None
         async with aiohttp.ClientSession() as mark_session:
@@ -463,7 +463,7 @@ class DALLE:
         openai.api_key = token
         openai.organization = organization
 
-    async def ___convert_to_RGBA(self, image_data):
+    async def ___convert_to_rgba(self, image_data):
         """
         Converts image to RGBA format.
 
@@ -476,5 +476,4 @@ class DALLE:
         image = image.convert("RGBA")
         image_data = BytesIO()
         image.save(image_data, format="PNG")
-        image_data = image_data.getvalue()
-        return image_data
+        return image_data.getvalue()
