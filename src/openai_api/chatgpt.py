@@ -576,7 +576,7 @@ class ChatGPT:
 
         # Add 'prompt' or 'messages' parameter
         if self.prompt_method:
-            params["prompt"] = prompt
+            params["messages"] = [{"role": "system", "content": prompt}]
         else:
             params["messages"] = prompt
 
@@ -714,10 +714,10 @@ class ChatGPT:
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
 
-        # Add last response to chat
-        record = {"role": "assistant", "content": full_prompt}
-        self.chats[chat_name].append(record)
-        self.___logger.debug("Recorded added to chat '%s': %s", chat_name, record)
+            # Add last response to chat
+            record = {"role": "assistant", "content": full_prompt}
+            self.chats[chat_name].append(record)
+            self.___logger.debug("Recorded added to chat '%s': %s", chat_name, record)
 
     async def str_chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
         """

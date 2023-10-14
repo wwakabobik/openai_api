@@ -211,6 +211,7 @@ class DALLE:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
+                image_data = self.___convert_to_RGBA(image_data)
         self.___logger.debug("Image converted from URL %s to bytes format", url)
         return Image.open(BytesIO(image_data))
 
@@ -224,7 +225,7 @@ class DALLE:
         """
         self.___logger.debug("Creating image data using prompt %s", prompt)
         tasks = []
-        async for items in await self.create_image(prompt):
+        for items in await self.create_image(prompt):
             task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
             tasks.append(task)
         return_value = await asyncio.gather(*tasks)
@@ -294,7 +295,7 @@ class DALLE:
         """
         self.___logger.debug("Creating image variation from file and getting data")
         tasks = []
-        async for items in await self.create_variation_from_file(file):
+        for items in await self.create_variation_from_file(file):
             task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
             tasks.append(task)
         return_value = await asyncio.gather(*tasks)
@@ -313,6 +314,7 @@ class DALLE:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
+                image_data = self.___convert_to_RGBA(image_data)
 
         response = await openai.Image.acreate_variation(
             image=BytesIO(image_data), n=self.default_count, size=self.default_size, user=self.user
@@ -345,7 +347,7 @@ class DALLE:
         """
         self.___logger.debug("Creating image variation from URL %s and getting data", url)
         tasks = []
-        async for items in await self.create_variation_from_url(url):
+        for items in await self.create_variation_from_url(url):
             task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
             tasks.append(task)
         return_value = await asyncio.gather(*tasks)
@@ -382,14 +384,19 @@ class DALLE:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
+                image_data = self.___convert_to_RGBA(image_data)
 
+        mask_data = None
         async with aiohttp.ClientSession() as mark_session:
             async with mark_session.get(mask_url) as mark_resp:
                 mask_data = await mark_resp.read()
+                mask_data = BytesIO(mask_data)
+                mask_data = self.___convert_to_RGBA(mask_data)
+
         response = await openai.Image.acreate_edit(
             image=BytesIO(image_data),
             prompt=prompt,
-            mask=BytesIO(mask_data),
+            mask=mask_data,
             n=self.default_count,
             size=self.default_size,
             user=self.user,
@@ -432,7 +439,7 @@ class DALLE:
         """
         self.___logger.debug("Editing image from URL %s and getting data", url)
         tasks = []
-        async for items in await self.edit_image_from_url(url, prompt, mask_url):
+        for items in await self.edit_image_from_url(url, prompt, mask_url):
             task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
             tasks.append(task)
         return_value = await asyncio.gather(*tasks)
@@ -455,3 +462,19 @@ class DALLE:
         self.___logger.debug("Setting auth bearer")
         openai.api_key = token
         openai.organization = organization
+
+    async def ___convert_to_RGBA(self, image_data):
+        """
+        Converts image to RGBA format.
+
+        :param image_data: image to convert.
+
+        :return: image in RGBA format.
+        """
+        self.___logger.debug("Converting image to RGBA format")
+        image = Image.open(BytesIO(image_data))
+        image = image.convert("RGBA")
+        image_data = BytesIO()
+        image.save(image_data, format="PNG")
+        image_data = image_data.getvalue()
+        return image_data

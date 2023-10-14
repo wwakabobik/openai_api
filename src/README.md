@@ -2,7 +2,7 @@
 
 This package provides a Python API for [OpenAI](https://openai.com/), based on the official [API documentation](https://openai.com/blog/openai-api) and wraps-up original [OpenAI API](https://pypi.org/project/openai/).
 
-[![PyPI version](https://badge.fury.io/py/openai-api.svg)](https://badge.fury.io/py/openai-api)
+[![PyPI version](https://badge.fury.io/py/openai-api.svg)](https://badge.fury.io/py/openai-api) [![Linters](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml/badge.svg?branch=master)](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml)
 
 ## Installation
 
@@ -35,7 +35,7 @@ print(response)
 
 This will produce the following output:
 
-<IMAGE>
+![ChatGPT prompt](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/john_connor.gif)
 
 ### Creating personalized a ChatGPT instance
 
@@ -58,14 +58,15 @@ Most of these params reflects OpenAI model parameters. You can find more informa
 But several params are specific for this API: `prompt_method` is stub to use direct input to model without usage of "messages" and managing/storing them. It might be an option if you need to trigger chat only once, or you don't need to pass extra messages and instructions to chat. `system_settings` is used to store bot global instructions, like how to behave, how to act and format output. Refer to [Best practices](https://platform.openai.com/docs/guides/gpt-best-practices/tactic-ask-the-model-to-adopt-a-persona). `history_length` is used to store history of messages. It's used to pass messages to model in a single request. Default is 5, but you can change it if you need to store more messages. More you pass, more expensive request will be.
 
 ```python
-chatgpt = ChatGPT(auth_token='your-auth-token', organization='your-organization', model='chatgpt3.5', history_length=10)
+chatgpt = ChatGPT(auth_token='your-auth-token', organization='your-organization', 
+                  model='chatgpt3.5', history_length=10)
 chatgpt.model.temperature = 0.5
 chatgpt.model.top_p = 0.9
 ```
 
 Here is a difference between `prompt_method=True` and `prompt_method=False` wih message history:
 
-<IMAGE>
+![Chat response differences](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/difference_propmpt.gif)
 
 ### Managing chats
 
@@ -87,7 +88,7 @@ chatgpt.chat({"role": "user", "content": "Do Androids Dream of Electric Sheep?"}
 chatgpt.process_chat({"role": "user", "content": "What use was time to those who'd soon achieve Digital Immortality?"})
 ```
 
-<IMAGE>
+![Completion object answer](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/completion.jpg)
 
 ### Service methods
 
@@ -99,7 +100,8 @@ transcripted_string = chatgpt.transcript('audiofile.mp3', language='russian', re
 translated_string = chatgpt.translate(transcripted_string, response_format='json')
 ```
 
-<IMAGE>
+![Audio functionality](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/transcribers.gif)
+
 
 For details refer to [OpenAI API documentation](https://platform.openai.com/docs/api-reference/audio) for Audio topic.
 
@@ -140,7 +142,7 @@ chatgpt.function_call = "auto"  # none to disable or use dict like {"name": "my_
 ```
 Now, when you're going to asking the ChatGPT about something, it will return related info using your function.
 
-<IMAGE>
+![Calling functions](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/weather.gif)
 
 For details refer to [OpenAI API documentation](https://platform.openai.com/docs/guides/gpt/function-calling) for functions.
 
@@ -160,6 +162,8 @@ dalle = DALLE(auth_token='your-auth-token', organization='your-organization')
 images = dalle.create_image_url("cybernetic cat")  # will return list of urls to images
 ```
 
+![Cybernetic cat](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/cybernetic_cat.png)
+
 ### Creating personalized DALL-E instance
 
 You may need to create a custom DALL-E instance to use the API. You can do this by passing the following parameters to the `DALLE` constructor or just set them later:
@@ -170,7 +174,8 @@ You may need to create a custom DALL-E instance to use the API. You can do this 
 - `user` (str, optional): The user ID. Default is ''.
 
 ```python
-dalle = DALLE(auth_token='your-auth-token', organization='your-organization', default_count=3, default_size="256x256")
+dalle = DALLE(auth_token='your-auth-token', organization='your-organization', 
+              default_count=3, default_size="256x256")
 dalle.default_file_format = 'JPG'
 ```
 
@@ -179,24 +184,31 @@ dalle.default_file_format = 'JPG'
 You can use following methods to generate images:
 
 ```python
-image_bytes = dalle.create_image_data("robocop")  # will return list of images (bytes format).
-image_dict = dalle.create_image("night city")  # will return list of images (dict format).
+image_bytes = dalle.create_image("robocop")  # will return list of images (dict format).  
+image_dict = dalle.create_image_data("night city")  # will return list of images (bytes format).
 ```
 
 You can save bytes image to file:
 
 ```python
 # if file format is None, it will be taken from class attribute
-image_file = dalle.save_image(image = image_bytes, filename="robocop", file_format=None) # will return filename
+image_file = dalle.save_image(image = image_bytes, filename="night_city", file_format=None) # will return filename
 ```
+
+![Night city](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/night_city.png)
 
 You can use following methods to edit images:
 
 ```python
 with open("robocop.jpg", "rb") as image_file:
-    edited_image1 = dalle.edit_image_from_file(file=image_file, prompt="change color to pink")  # return of bytes format
+    with open("mask.png", "rb") as mask_file:
+    edited_image1 = dalle.edit_image_from_file(file=image_file, 
+                                               prompt="change color to pink", 
+                                               mask=mask_file)  # return of bytes format
 # or use url
-edited_image2 = dalle.edit_image_from_url(url=night_city_url, prompt="make it daylight")  # return of bytes format
+edited_image2 = dalle.edit_image_from_url(url=night_city_url, 
+                                          mask_url=mask_image_url, 
+                                          prompt="make it daylight")  # return of bytes format
 ```
 
 You can use following methods to create variations of images:
@@ -207,6 +219,29 @@ with open("robocop.jpg", "rb") as image_file:
 # or use url
 variated_image2 = dalle.create_variation_from_url(url=night_city_url)  # return of bytes format
 ```
+
+![Robocop](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/robocop_1.png) ![Robocop variation](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/robocop_1.png)
+
+
+## Additional notes
+
+Currently, library supports only asynchronous requests. It means that you need to wait for response from the model. It might take some time, so you need to be patient. In the future, we will add support for synchronous requests. 
+
+This means you must use async/await syntax to call the API. For example:
+
+```python
+import asyncio
+from openai_api import ChatGPT
+
+async def main():
+    chatgpt = ChatGPT(auth_token='your-auth-token', organization='your-organization')
+    response = await chatgpt.str_chat("What are the 3 rules of AI?")
+    print(response)
+
+asyncio.run(main())
+```
+
+Please refer to the [asyncio documentation](https://docs.python.org/3/library/asyncio.html) for more information. And to [my article](https://wwakabobik.github.io/2023/09/ai_learning_to_hear_and_speak/) about TTS/transcriptors for researching against possible pitfalls.
 
 ## Contributing
 
