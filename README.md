@@ -185,7 +185,7 @@ You can save bytes image to file:
 
 ```python
 # if file format is None, it will be taken from class attribute
-image_file = dalle.save_image(image = image_bytes, filename="robocop", file_format=None) # will return filename
+image_file = dalle.save_image(image = image_bytes[0], filename="robocop", file_format=None) # will return filename
 ```
 
 You can use following methods to edit images:

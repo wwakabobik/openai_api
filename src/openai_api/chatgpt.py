@@ -13,9 +13,11 @@ This file contains implementation for ChatGPT.
 
 import json
 import logging
+from uuid import uuid4
 
 import openai
 
+from .logger_config import setup_logger
 from .models import COMPLETIONS, TRANSCRIPTIONS, TRANSLATIONS
 
 
@@ -246,6 +248,8 @@ class ChatGPT:
         :param statistics: statistics logger. If none, will be initialized with zeros.
         :param system_settings: general system instructions for bot. Default is ''.
         """
+        self.___logger = logger if logger else setup_logger("ChatGPT", "chatgpt.log", logging.DEBUG)
+        self.___logger.debug("Initializing ChatGPT")
         self.___model = model
         self.___choices = choices
         self.___temperature = temperature
@@ -265,18 +269,17 @@ class ChatGPT:
         self.___current_chat = current_chat
         self.___prompt_method = prompt_method
         self.___set_auth(auth_token, organization)
-        self.___logger = logger
         self.___statistics = statistics
         self.___system_settings = system_settings if system_settings else ""
 
-    @staticmethod
-    def ___set_auth(token, organization):
+    def ___set_auth(self, token, organization):
         """
         Method to set auth bearer.
 
         :param token: authentication bearer token.
         :param organization: organization, which drives the chat.
         """
+        self.___logger.debug("Setting auth bearer")
         openai.api_key = token
         openai.organization = organization
 
@@ -287,6 +290,7 @@ class ChatGPT:
 
         :return: The name of the model.
         """
+        self.___logger.debug("Getting model %s", self.___model)
         return self.___model
 
     @model.setter
@@ -296,6 +300,7 @@ class ChatGPT:
 
         :param value: The new name of the model.
         """
+        self.___logger.debug("Setting model %s", value)
         self.___model = value
 
     @property
@@ -305,6 +310,7 @@ class ChatGPT:
 
         :return: The number of response options.
         """
+        self.___logger.debug("Getting choices %s", self.___choices)
         return self.___choices
 
     @choices.setter
@@ -314,6 +320,7 @@ class ChatGPT:
 
         :param value: The new number of response options.
         """
+        self.___logger.debug("Setting choices %s", value)
         self.___choices = value
 
     @property
@@ -323,6 +330,7 @@ class ChatGPT:
 
         :return: The temperature of the model's output.
         """
+        self.___logger.debug("Getting temperature %s", self.___temperature)
         return self.___temperature
 
     @temperature.setter
@@ -332,6 +340,7 @@ class ChatGPT:
 
         :param value: The new temperature of the model's output.
         """
+        self.___logger.debug("Setting temperature %s", value)
         self.___temperature = value
 
     @property
@@ -341,6 +350,7 @@ class ChatGPT:
 
         :return: The top-p value for nucleus sampling.
         """
+        self.___logger.debug("Getting top_p %s", self.___top_p)
         return self.___top_p
 
     @top_p.setter
@@ -350,6 +360,7 @@ class ChatGPT:
 
         :param value: The new top-p value for nucleus sampling.
         """
+        self.___logger.debug("Setting top_p %s", value)
         self.___top_p = value
 
     @property
@@ -359,6 +370,7 @@ class ChatGPT:
 
         :return: If True, the model will return intermediate results.
         """
+        self.___logger.debug("Getting stream %s", self.___stream)
         return self.___stream
 
     @stream.setter
@@ -368,6 +380,7 @@ class ChatGPT:
 
         :param value: The new value for stream.
         """
+        self.___logger.debug("Setting stream %s", value)
         self.___stream = value
 
     @property
@@ -377,6 +390,7 @@ class ChatGPT:
 
         :return: The stop sequence at which the model should stop generating further tokens.
         """
+        self.___logger.debug("Getting stop %s", self.___stop)
         return self.___stop
 
     @stop.setter
@@ -386,6 +400,7 @@ class ChatGPT:
 
         :param value: The new stop sequence.
         """
+        self.___logger.debug("Setting stop %s", value)
         self.___stop = value
 
     @property
@@ -395,6 +410,7 @@ class ChatGPT:
 
         :return: The maximum number of tokens in the output.
         """
+        self.___logger.debug("Getting max_tokens %s", self.___max_tokens)
         return self.___max_tokens
 
     @max_tokens.setter
@@ -404,6 +420,7 @@ class ChatGPT:
 
         :param value: The new maximum number of tokens in the output.
         """
+        self.___logger.debug("Setting max_tokens %s", value)
         self.___max_tokens = value
 
     @property
@@ -413,6 +430,7 @@ class ChatGPT:
 
         :return: The penalty for new token presence.
         """
+        self.___logger.debug("Getting presence_penalty %s", self.___presence_penalty)
         return self.___presence_penalty
 
     @presence_penalty.setter
@@ -422,6 +440,7 @@ class ChatGPT:
 
         :param value: The new penalty for new token presence.
         """
+        self.___logger.debug("Setting presence_penalty %s", value)
         self.___presence_penalty = value
 
     @property
@@ -431,6 +450,7 @@ class ChatGPT:
 
         :return: The penalty for token frequency.
         """
+        self.___logger.debug("Getting frequency_penalty %s", self.___frequency_penalty)
         return self.___frequency_penalty
 
     @frequency_penalty.setter
@@ -440,6 +460,7 @@ class ChatGPT:
 
         :param value: The new penalty for token frequency.
         """
+        self.___logger.debug("Setting frequency_penalty %s", value)
         self.___frequency_penalty = value
 
     @property
@@ -449,6 +470,7 @@ class ChatGPT:
 
         :return: The bias for the logits before sampling.
         """
+        self.___logger.debug("Getting logit_bias %s", self.___logit_bias)
         return self.___logit_bias
 
     @logit_bias.setter
@@ -458,6 +480,7 @@ class ChatGPT:
 
         :param value: The new bias for the logits before sampling.
         """
+        self.___logger.debug("Setting logit_bias %s", value)
         self.___logit_bias = value
 
     @property
@@ -467,6 +490,7 @@ class ChatGPT:
 
         :return: The user ID.
         """
+        self.___logger.debug("Getting user %s", self.___user)
         return self.___user
 
     @user.setter
@@ -476,6 +500,7 @@ class ChatGPT:
 
         :param value: The new user ID.
         """
+        self.___logger.debug("Setting user %s", value)
         self.___user = value
 
     @property
@@ -485,6 +510,7 @@ class ChatGPT:
 
         :return: The list of functions.
         """
+        self.___logger.debug("Getting functions %s", self.___functions)
         return self.___functions
 
     @functions.setter
@@ -494,6 +520,7 @@ class ChatGPT:
 
         :param value: The new list of functions.
         """
+        self.___logger.debug("Setting functions %s", value)
         self.___functions = value
 
     @property
@@ -503,6 +530,7 @@ class ChatGPT:
 
         :return: The function call.
         """
+        self.___logger.debug("Getting function_call %s", self.___function_call)
         return self.___function_call
 
     @function_call.setter
@@ -512,6 +540,7 @@ class ChatGPT:
 
         :param value: The new function call.
         """
+        self.___logger.debug("Setting function_call %s", value)
         self.___function_call = value
 
     @property
@@ -521,6 +550,7 @@ class ChatGPT:
 
         :return: The function dict.
         """
+        self.___logger.debug("Getting function_dict %s", self.___function_dict)
         return self.___function_dict
 
     @function_dict.setter
@@ -530,6 +560,7 @@ class ChatGPT:
 
         :param value: The new function dict.
         """
+        self.___logger.debug("Setting function_dict %s", value)
         self.___function_dict = value
 
     @property
@@ -539,6 +570,7 @@ class ChatGPT:
 
         :return: The history length.
         """
+        self.___logger.debug("Getting history_length %s", self.___history_length)
         return self.___history_length
 
     @history_length.setter
@@ -548,6 +580,7 @@ class ChatGPT:
 
         :param value: The new history length.
         """
+        self.___logger.debug("Setting history_length %s", value)
         self.___history_length = value
 
     @property
@@ -557,6 +590,7 @@ class ChatGPT:
 
         :return: The chats.
         """
+        self.___logger.debug("Getting chats %s", len(self.___chats) if self.___chats else 0)
         return self.___chats
 
     @chats.setter
@@ -566,6 +600,7 @@ class ChatGPT:
 
         :param value: The new chats.
         """
+        self.___logger.debug("Setting chats %s", len(value) if value else 0)
         self.___chats = value
 
     @property
@@ -575,6 +610,7 @@ class ChatGPT:
 
         :return: The current chat.
         """
+        self.___logger.debug("Getting current_chat %s", self.___current_chat)
         return self.___current_chat
 
     @current_chat.setter
@@ -584,6 +620,7 @@ class ChatGPT:
 
         :param value: The current chat.
         """
+        self.___logger.debug("Setting current_chat %s", value)
         self.___current_chat = value
 
     @property
@@ -593,6 +630,7 @@ class ChatGPT:
 
         :return: The prompt method.
         """
+        self.___logger.debug("Getting prompt_method %s", self.___prompt_method)
         return self.___prompt_method
 
     @prompt_method.setter
@@ -602,6 +640,7 @@ class ChatGPT:
 
         :param value: The prompt method.
         """
+        self.___logger.debug("Setting prompt_method %s", value)
         self.___prompt_method = value
 
     @property
@@ -611,6 +650,7 @@ class ChatGPT:
 
         :return: The system settings method.
         """
+        self.___logger.debug("Getting system_settings %s", self.___system_settings)
         return self.___system_settings
 
     @system_settings.setter
@@ -620,6 +660,7 @@ class ChatGPT:
 
         :param value: The system settings.
         """
+        self.___logger.debug("Setting system_settings %s", value)
         self.___system_settings = value
 
     @property
@@ -629,6 +670,7 @@ class ChatGPT:
 
         :return: The logger object.
         """
+        self.___logger.debug("Getting logger...", self.___logger)
         return self.___logger
 
     @logger.setter
@@ -638,6 +680,7 @@ class ChatGPT:
 
         :param value: The new logger object.
         """
+        self.___logger.debug("Setting logger...", value)
         self.___logger = value
 
     async def process_chat(self, prompt, default_choice=0, chat_name=None):
@@ -653,6 +696,14 @@ class ChatGPT:
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-statements
         # Prepare parameters
+        uid = str(uuid4())
+        self.___logger.debug(
+            "Processing chat '%s' with prompt '%s', tracking choice %s with uid=",
+            chat_name,
+            prompt,
+            default_choice,
+            uid,
+        )
         params = {
             "model": self.model,
             "max_tokens": self.max_tokens,
@@ -703,7 +754,7 @@ class ChatGPT:
                     else:
                         continue
             except GeneratorExit:
-                pass
+                self.___logger.debug("Chat ended with uid=%s", uid)
             try:
                 if func_response:
                     # Save to history
@@ -721,7 +772,7 @@ class ChatGPT:
                         if chunk["choices"][default_choice]["finish_reason"] is not None:
                             break
             except GeneratorExit:
-                pass
+                self.___logger.debug("Chat ended with uid=%s", uid)
         else:
             response = await openai.ChatCompletion.acreate(**params)
             if response["choices"][default_choice]["finish_reason"] == "function_call":
@@ -745,7 +796,7 @@ class ChatGPT:
                 else:
                     yield response
             except GeneratorExit:
-                pass
+                self.___logger.debug("Chat ended with uid=%s", uid)
 
     async def __handle_chat_name(self, chat_name, prompt):
         """
@@ -759,7 +810,15 @@ class ChatGPT:
         if chat_name is None:
             chat_name = prompt[:40]
             self.current_chat = chat_name
+            self.___logger.debug(
+                "Chat name is None, setting it to the first 40 characters of the prompt: %s", chat_name
+            )
+        else:
+            if len(chat_name) > 40:
+                self.___logger.debug("Chat name is longer than 40 characters, truncating it: %s", chat_name)
+                chat_name = chat_name[:40]
         if chat_name not in self.chats:
+            self.___logger.debug("Chat name '%s' is not present in self.chats, adding it", chat_name)
             self.chats[chat_name] = []
         return chat_name
 
@@ -773,6 +832,15 @@ class ChatGPT:
         :param extra_settings: Extra system settings for chat. Default is ''.
         """
         # pylint: disable=too-many-branches
+        uid = str(uuid4())
+        self.___logger.debug(
+            "Chatting with prompt '%s' in chat '%s', tracking choice %s, with extra settings = '%s', uid=%s",
+            prompt,
+            chat_name,
+            default_choice,
+            extra_settings,
+            uid,
+        )
         # Call process_chat
         full_prompt = ""
         if self.prompt_method:
@@ -819,10 +887,12 @@ class ChatGPT:
                     else:
                         break
             except GeneratorExit:
-                pass
+                self.___logger.debug("Chat ended with uid=%s", uid)
 
         # Add last response to chat
-        self.chats[chat_name].append({"role": "assistant", "content": full_prompt})
+        record = {"role": "assistant", "content": full_prompt}
+        self.chats[chat_name].append(record)
+        self.___logger.debug("Recorded added to chat '%s': %s", chat_name, record)
 
     async def str_chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
         """
@@ -835,6 +905,15 @@ class ChatGPT:
 
         :return: Content of the message.
         """
+        uid = str(uuid4())
+        self.___logger.debug(
+            "Chatting str with prompt '%s' in chat '%s', tracking choice %s, with extra settings = '%s', uid=%s",
+            prompt,
+            chat_name,
+            default_choice,
+            extra_settings,
+            uid,
+        )
         try:
             async for response in self.chat(prompt, chat_name, default_choice, extra_settings=extra_settings):
                 if isinstance(response, dict):
@@ -848,7 +927,7 @@ class ChatGPT:
                 else:
                     break
         except GeneratorExit:
-            pass
+            self.___logger.debug("String chat ended with uid=%s", uid)
 
     async def transcript(self, file, prompt=None, language="en", response_format="text"):
         """
@@ -863,10 +942,11 @@ class ChatGPT:
 
         :return: transcription (text, json, srt, verbose_json or vtt)
         """
+        self.___logger.debug("Transcribing file in %s with prompt '%s' to %s format", language, prompt, response_format)
         kwargs = {}
         if prompt is not None:
             kwargs["prompt"] = prompt
-        return await openai.Audio.atranscribe(
+        response = await openai.Audio.atranscribe(
             model=TRANSCRIPTIONS[0],
             file=file,
             language=language,
@@ -874,6 +954,8 @@ class ChatGPT:
             temperature=self.temperature,
             **kwargs,
         )
+        self.___logger.debug("Transcription response: %s", response)
+        return response
 
     async def translate(self, file, prompt=None, response_format="text"):
         """
@@ -887,16 +969,19 @@ class ChatGPT:
 
         :return: transcription (text, json, srt, verbose_json or vtt)
         """
+        self.___logger.debug("Translating file with prompt '%s' to %s format", prompt, response_format)
         kwargs = {}
         if prompt is not None:
             kwargs["prompt"] = prompt
-        return await openai.Audio.atranslate(
+        response = await openai.Audio.atranslate(
             model=TRANSLATIONS[0],
             file=file,
             response_format=response_format,
             temperature=self.temperature,
             **kwargs,
         )
+        self.___logger.debug("Translation response: %s", response)
+        return response
 
     async def process_function(self, function_call):
         """
@@ -906,10 +991,13 @@ class ChatGPT:
 
         :return: transcription (text, json, srt, verbose_json or vtt)
         """
+        self.___logger.debug("Processing function call: %s", function_call)
         function_name = function_call["name"]
         function_to_call = self.function_dict[function_name]
         function_response = function_to_call(**json.loads(function_call["arguments"]))
-        return {"role": "function", "name": function_name, "content": function_response}
+        return_value = {"role": "function", "name": function_name, "content": function_response}
+        self.___logger.debug("Function response: %s", return_value)
+        return return_value
 
     def dump_settings(self):
         """
@@ -917,7 +1005,8 @@ class ChatGPT:
 
         :return: JSON with settings.
         """
-        return json.dumps(
+        self.___logger.debug("Dumping settings")
+        dump = json.dumps(
             {
                 "model": self.model,
                 "choices": self.choices,
@@ -938,6 +1027,8 @@ class ChatGPT:
                 "system_settings": self.system_settings,
             }
         )
+        self.___logger.debug("Settings dumped: %s", dump)
+        return dump
 
     def dump_chats(self):
         """
@@ -945,6 +1036,10 @@ class ChatGPT:
 
         :return: JSON with chats.
         """
+        if not self.chats:
+            self.___logger.error("No chats found to dump")
+            return json.dumps({})
+        self.___logger.debug("Dumping %s chats", len(self.chats))
         return json.dumps(self.chats)
 
     def dump_chat(self, chat_name):
@@ -955,4 +1050,8 @@ class ChatGPT:
 
         :return: JSON with chat.
         """
+        if chat_name not in self.chats:
+            self.___logger.error("Chat %s not found to dump", chat_name)
+            return json.dumps({})
+        self.___logger.debug("Dumped %s records in chat %s", len(self.chats[chat_name]), chat_name)
         return json.dumps(self.chats[chat_name])
