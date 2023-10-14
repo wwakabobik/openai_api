@@ -169,17 +169,6 @@ class DALLE:
         self.___logger.debug("Setting logger...")
         self.___logger = value
 
-    def ___set_auth(self, token, organization):
-        """
-        Method to set auth bearer.
-
-        :param token: authentication bearer token.
-        :param organization: organization, which drives the chat.
-        """
-        self.___logger.debug("Setting auth bearer")
-        openai.api_key = token
-        openai.organization = organization
-
     async def create_image(self, prompt):
         """
         Creates an image using DALL-E Image API.
@@ -455,3 +444,14 @@ class DALLE:
             len(return_value),
         )
         return return_value
+
+    def ___set_auth(self, token, organization):
+        """
+        Method to set auth bearer.
+
+        :param token: authentication bearer token.
+        :param organization: organization, which drives the chat.
+        """
+        self.___logger.debug("Setting auth bearer")
+        openai.api_key = token
+        openai.organization = organization
