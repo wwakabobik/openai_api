@@ -184,15 +184,12 @@ class ChatGPT:
     function_call (str, optional): The function call. Default is None.
     function_dict (dict, optional): Dict of functions. Default is None.
     history_length (int, optional): Length of history. Default is 5.
-    chats (dict, optional): Chats dictionary, contains all chat. Default is None.
+    chats (dict, optional): Chats dictionary, contains all chats. Default is None.
     current_chat (str, optional): Default chat will be used. Default is None.
     prompt_method (bool, optional): prompt method. Use messages if False, otherwise - prompt. Default if False.
     logger (logging.Logger, optional): default logger. Default is None.
     statistic (GPTStatistics, optional): statistics logger. If none, will be initialized with zeros.
     system_settings (str, optional): general instructions for chat. Default is None.
-    echo    # TODO
-    best_of # TODO
-    suffix  # TODO
     """
 
     def __init__(
@@ -766,13 +763,14 @@ class ChatGPT:
             self.chats[chat_name] = []
         return chat_name
 
-    async def chat(self, prompt, chat_name=None, default_choice=0):
+    async def chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
         """
         Wrapper for the process_chat function. Adds new messages to the chat and calls process_chat.
 
         :param prompt: Message from the user.
         :param chat_name: Name of the chat. If None, uses self.current_chat.
         :param default_choice: Index of the model's response choice.
+        :param extra_settings: Extra system settings for chat. Default is ''.
         """
         # pylint: disable=too-many-branches
         # Call process_chat
@@ -802,7 +800,7 @@ class ChatGPT:
             self.chats[chat_name].append({"role": "user", "content": prompt})
             # Get last 'history_length' messages
             messages = self.chats[chat_name][-self.history_length :]
-            messages.insert(0, {"role": "system", "content": self.system_settings})
+            messages.insert(0, {"role": "system", "content": f"{self.system_settings} {extra_settings}"})
 
             try:
                 async for response in self.process_chat(
@@ -826,18 +824,19 @@ class ChatGPT:
         # Add last response to chat
         self.chats[chat_name].append({"role": "assistant", "content": full_prompt})
 
-    async def str_chat(self, prompt, chat_name=None, default_choice=0):
+    async def str_chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
         """
         Wrapper for the chat function. Returns only the content of the message.
 
         :param prompt: Message from the user.
         :param chat_name: Name of the chat. If None, uses self.current_chat.
         :param default_choice: Index of the model's response choice.
+        :param extra_settings: Extra system settings for chat. Default is ''.
 
         :return: Content of the message.
         """
         try:
-            async for response in self.chat(prompt, chat_name, default_choice):
+            async for response in self.chat(prompt, chat_name, default_choice, extra_settings=extra_settings):
                 if isinstance(response, dict):
                     if self.stream:
                         if "content" in response["choices"][default_choice]["delta"].keys():
@@ -859,7 +858,7 @@ class ChatGPT:
         :param prompt: Previous prompt. Default is None.
         :param language: Language on which audio is. Default is 'en'.
         :param response_format: default response format, by default is 'text'.
-                               Possible values are: json, text, srt, verbose_json, or vtt.
+                                Possible values are: json, text, srt, verbose_json, or vtt.
 
 
         :return: transcription (text, json, srt, verbose_json or vtt)
@@ -911,3 +910,49 @@ class ChatGPT:
         function_to_call = self.function_dict[function_name]
         function_response = function_to_call(**json.loads(function_call["arguments"]))
         return {"role": "function", "name": function_name, "content": function_response}
+
+    def dump_settings(self):
+        """
+        Dumps settings to JSON.
+
+        :return: JSON with settings.
+        """
+        return json.dumps(
+            {
+                "model": self.model,
+                "choices": self.choices,
+                "temperature": self.temperature,
+                "top_p": self.top_p,
+                "stream": self.stream,
+                "stop": self.stop,
+                "max_tokens": self.max_tokens,
+                "presence_penalty": self.presence_penalty,
+                "frequency_penalty": self.frequency_penalty,
+                "logit_bias": self.logit_bias,
+                "user": self.user,
+                "functions": self.functions,
+                "function_call": self.function_call,
+                "function_dict": self.function_dict,
+                "history_length": self.history_length,
+                "prompt_method": self.prompt_method,
+                "system_settings": self.system_settings,
+            }
+        )
+
+    def dump_chats(self):
+        """
+        Dumps chats to JSON.
+
+        :return: JSON with chats.
+        """
+        return json.dumps(self.chats)
+
+    def dump_chat(self, chat_name):
+        """
+        Dumps chat to JSON.
+
+        :param chat_name: Name of the chat.
+
+        :return: JSON with chat.
+        """
+        return json.dumps(self.chats[chat_name])
