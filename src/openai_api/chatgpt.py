@@ -530,7 +530,7 @@ class ChatGPT:
 
         :return: The logger object.
         """
-        self.___logger.debug("Getting logger...", self.___logger)
+        self.___logger.debug("Getting logger...")
         return self.___logger
 
     @logger.setter
@@ -540,7 +540,7 @@ class ChatGPT:
 
         :param value: The new logger object.
         """
-        self.___logger.debug("Setting logger...", value)
+        self.___logger.debug("Setting logger...")
         self.___logger = value
 
     async def process_chat(self, prompt, default_choice=0, chat_name=None):
@@ -555,15 +555,15 @@ class ChatGPT:
         """
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-statements
-        # Prepare parameters
         uid = str(uuid4())
         self.___logger.debug(
-            "Processing chat '%s' with prompt '%s', tracking choice %s with uid=",
+            "Processing chat '%s' with prompt '%s', tracking choice %s with uid=%s",
             chat_name,
             prompt,
             default_choice,
             uid,
         )
+        # Prepare parameters
         params = {
             "model": self.model,
             "max_tokens": self.max_tokens,
