@@ -34,8 +34,8 @@ jobs:
       id: mypy
       continue-on-error: true
       run: |
-      mkdir -p .mypy_cache
-      PYTHONPATH=. mypy $(find . -name '*.py') --install-types --non-interactive --ignore-missing-imports
+        mkdir -p .mypy_cache
+        PYTHONPATH=. mypy $(find . -name '*.py') --install-types --non-interactive --ignore-missing-imports
     - name: Check code with flake8
       id: flake8
       continue-on-error: true
