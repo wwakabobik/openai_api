@@ -5,7 +5,7 @@ Author: Iliya Vereshchagin
 Copyright (c) 2023. All rights reserved.
 
 Created: 25.08.2023
-Last Modified: 26.08.2023
+Last Modified: 14.10.2023
 
 Description:
 This file contains implementation for DALL-E2.
@@ -17,15 +17,18 @@ import os
 import tempfile
 import uuid
 from io import BytesIO
+from typing import Optional
 
 import aiohttp
 import openai
 from PIL import Image
 
+from .logger_config import setup_logger
+
 
 class DALLE:
     """
-    The ChatGPT class is for managing an instance of the ChatGPT model.
+    The DALLE class is for managing an instance of the DALLE model.
 
     Parameters:
     auth_token (str): Authentication bearer token. Required.
@@ -45,7 +48,7 @@ class DALLE:
         default_size: str = "512x512",
         default_file_format: str = "PNG",
         user: str = "",
-        logger: logging.Logger = None,
+        logger: Optional[logging.Logger] = None,
     ):
         """
         General init
@@ -58,23 +61,13 @@ class DALLE:
         :param user: The user ID. Optional. Default is ''.
         :param logger: default logger. Optional. Default is None.
         """
+        self.___logger = logger if logger is not None else setup_logger("DALLE", "dalle.log", logging.DEBUG)
+        self.___logger.debug("DALLE init")
         self.___default_count = default_count
         self.___default_size = default_size
         self.___default_file_format = default_file_format
         self.___user = user
         self.___set_auth(auth_token, organization)
-        self.___logger = logger
-
-    @staticmethod
-    def ___set_auth(token, organization):
-        """
-        Method to set auth bearer.
-
-        :param token: authentication bearer token.
-        :param organization: organization, which drives the chat.
-        """
-        openai.api_key = token
-        openai.organization = organization
 
     @property
     def default_count(self):
@@ -83,6 +76,7 @@ class DALLE:
 
         :return: Returns default_count value.
         """
+        self.___logger.debug("Getting default_count %s", self.___default_count)
         return self.___default_count
 
     @default_count.setter
@@ -92,6 +86,7 @@ class DALLE:
 
         :param value: The new value of default_count.
         """
+        self.___logger.debug("Setting default_count %s", value)
         self.___default_count = value
 
     @property
@@ -101,6 +96,7 @@ class DALLE:
 
         :return: Returns default_size value.
         """
+        self.___logger.debug("Getting default_size %s", self.___default_size)
         return self.___default_size
 
     @default_size.setter
@@ -110,6 +106,7 @@ class DALLE:
 
         :param value: The new value of  default_size.
         """
+        self.___logger.debug("Setting default_size %s", value)
         self.___default_size = value
 
     @property
@@ -119,6 +116,7 @@ class DALLE:
 
         :return: Returns default_file_format value.
         """
+        self.___logger.debug("Getting default_file_format %s", self.___default_file_format)
         return self.___default_file_format
 
     @default_file_format.setter
@@ -128,6 +126,7 @@ class DALLE:
 
         :param value: The new value of default_file_format.
         """
+        self.___logger.debug("Setting default_file_format %s", value)
         self.___default_file_format = value
 
     @property
@@ -137,6 +136,7 @@ class DALLE:
 
         :return: The user.
         """
+        self.___logger.debug("Getting user %s", self.___user)
         return self.___user
 
     @user.setter
@@ -146,6 +146,7 @@ class DALLE:
 
         :param value: The user.
         """
+        self.___logger.debug("Setting user %s", value)
         self.___user = value
 
     @property
@@ -155,6 +156,7 @@ class DALLE:
 
         :return: The logger object.
         """
+        self.___logger.debug("Getting logger...")
         return self.___logger
 
     @logger.setter
@@ -164,6 +166,7 @@ class DALLE:
 
         :param value: The new logger object.
         """
+        self.___logger.debug("Setting logger...")
         self.___logger = value
 
     async def create_image(self, prompt):
@@ -174,9 +177,11 @@ class DALLE:
 
         :return: A PIL.Image object created from the image data received from the API.
         """
+        self.___logger.debug("Creating image using prompt %s", prompt)
         response = await openai.Image.acreate(
             prompt=prompt, n=self.default_count, size=self.default_size, user=self.user
         )
+        self.___logger.debug("Image created, response: %s", response["data"])
         return response["data"]
 
     async def create_image_url(self, prompt):
@@ -187,13 +192,14 @@ class DALLE:
 
         :return: list of URLs
         """
+        self.___logger.debug("Creating image URLs using prompt %s", prompt)
         image_urls = []
         for items in await self.create_image(prompt):
             image_urls.append(items["url"])
+        self.___logger.debug("Image URLs created, response: %s", image_urls)
         return image_urls
 
-    @staticmethod
-    async def convert_image_from_url_to_bytes(url):
+    async def convert_image_from_url_to_bytes(self, url):
         """
         Converts image from URL to bytes format.
 
@@ -201,9 +207,12 @@ class DALLE:
 
         :return: URL
         """
+        self.___logger.debug("Converting image from URL %s to bytes format", url)
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
+                image_data = self.___convert_to_rgba(image_data)
+        self.___logger.debug("Image converted from URL %s to bytes format", url)
         return Image.open(BytesIO(image_data))
 
     async def create_image_data(self, prompt):
@@ -214,11 +223,14 @@ class DALLE:
 
         :return: list of images (bytes format).
         """
+        self.___logger.debug("Creating image data using prompt %s", prompt)
         tasks = []
-        async for items in await self.create_image(prompt):
+        for items in await self.create_image(prompt):
             task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
             tasks.append(task)
-        return await asyncio.gather(*tasks)
+        return_value = await asyncio.gather(*tasks)
+        self.___logger.debug("Images created, total: %s", len(return_value))
+        return return_value
 
     def save_image(self, image, filename=None, file_format=None):
         """Saves an image to a file.
@@ -230,15 +242,17 @@ class DALLE:
 
         :return: The full path of the file where the image was saved, or None if the image could not be saved.
         """
+        self.___logger.debug("Saving image %s", image)
         if file_format is None:
             file_format = self.default_file_format
         if filename is None:
             filename = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4()}.{file_format.lower()}")
         try:
-            image.save(filename, format=format)
+            image.save(filename)
         except Exception as error:  # pylint: disable=W0718
-            print(f"Can't save image: {error}")
+            self.___logger.error("Can't save image: %s", error)
             return None
+        self.___logger.debug("Image saved to %s", filename)
         return filename
 
     async def create_variation_from_file(self, file):
@@ -249,14 +263,44 @@ class DALLE:
 
         :return: A PIL.Image object created from the image data received from the API.
         """
+        self.___logger.debug("Creating image variation from file")
         response = await openai.Image.acreate_variation(
             image=file, n=self.default_count, size=self.default_size, user=self.user
         )
-        image_url = response["data"][0]["url"]
-        async with aiohttp.ClientSession() as session:
-            async with session.get(image_url) as resp:
-                image_data = await resp.read()
-        return Image.open(BytesIO(image_data))
+        self.___logger.debug("Image variation created from file, response: %s", response["data"])
+        return response["data"]
+
+    async def create_variation_from_file_and_get_url(self, file):
+        """
+        Creates an image variation from file using DALL-E Image API, returns list of URLs with images.
+
+        :param file: file of the image (bytes).
+
+        :return: list of URLs
+        """
+        self.___logger.debug("Creating image variation from file and getting URLs")
+        image_urls = []
+        for items in await self.create_variation_from_file(file):
+            image_urls.append(items["url"])
+        self.___logger.debug("Image variation created from file and got URLs, response: %s", image_urls)
+        return image_urls
+
+    async def create_variation_from_file_and_get_data(self, file):
+        """
+        Creates an image variation from file using DALL-E Image API, returns list of images (bytes format).
+
+        :param file: file of the image (bytes).
+
+        :return: list of images (bytes format).
+        """
+        self.___logger.debug("Creating image variation from file and getting data")
+        tasks = []
+        for items in await self.create_variation_from_file(file):
+            task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
+            tasks.append(task)
+        return_value = await asyncio.gather(*tasks)
+        self.___logger.debug("Image variation created from file and got data, total: %s", len(return_value))
+        return return_value
 
     async def create_variation_from_url(self, url):
         """
@@ -266,18 +310,49 @@ class DALLE:
 
         :return: A PIL.Image object created from the image data received from the API.
         """
+        self.___logger.debug("Creating image variation from URL %s", url)
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
+                image_data = self.___convert_to_rgba(image_data)
 
         response = await openai.Image.acreate_variation(
             image=BytesIO(image_data), n=self.default_count, size=self.default_size, user=self.user
         )
-        image_url = response["data"][0]["url"]
-        async with aiohttp.ClientSession() as session:
-            async with session.get(image_url) as resp:
-                variation_image_data = await resp.read()
-        return Image.open(BytesIO(variation_image_data))
+        self.___logger.debug("Image variation created from URL %s, response: %s", url, response["data"])
+        return response["data"]
+
+    async def create_variation_from_url_and_get_url(self, url):
+        """
+        Creates an image variation from URL using DALL-E Image API, returns list of URLs with images.
+
+        :param url: URL of the image.
+
+        :return: list of URLs
+        """
+        self.___logger.debug("Creating image variation from URL %s and getting URLs", url)
+        image_urls = []
+        for items in await self.create_variation_from_url(url):
+            image_urls.append(items["url"])
+        self.___logger.debug("Image variation created from URL %s and got URLs, response: %s", url, image_urls)
+        return image_urls
+
+    async def create_variation_from_url_and_get_data(self, url):
+        """
+        Creates an image variation from URL using DALL-E Image API, returns list of images (bytes format).
+
+        :param url: URL of the image.
+
+        :return: list of images (bytes format).
+        """
+        self.___logger.debug("Creating image variation from URL %s and getting data", url)
+        tasks = []
+        for items in await self.create_variation_from_url(url):
+            task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
+            tasks.append(task)
+        return_value = await asyncio.gather(*tasks)
+        self.___logger.debug("Image variation created from URL %s and got data, total: %s", url, len(return_value))
+        return return_value
 
     async def edit_image_from_file(self, file, prompt, mask=None):
         """
@@ -289,14 +364,12 @@ class DALLE:
                      If provided, the mask will be applied to the image.
         :return: A PIL.Image object created from the image data received from the API.
         """
+        self.___logger.debug("Editing image from file using mask and prompt '%s'", prompt)
         response = await openai.Image.acreate_edit(
             image=file, prompt=prompt, mask=mask, n=self.default_count, size=self.default_size, user=self.user
         )
-        image_url = response["data"][0]["url"]
-        async with aiohttp.ClientSession() as session:
-            async with session.get(image_url) as resp:
-                image_data = await resp.read()
-        return Image.open(BytesIO(image_data))
+        self.___logger.debug("Image edited from file, mask and prompt '%s', response: %s", prompt, response["data"])
+        return response["data"]
 
     async def edit_image_from_url(self, url, prompt, mask_url=None):
         """
@@ -307,23 +380,100 @@ class DALLE:
         :param mask_url: Url containing mask image. If provided, the mask will be applied to the image.
         :return: A PIL.Image object created from the image data received from the API.
         """
+        self.___logger.debug("Editing image from URL %s", url)
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
+                image_data = self.___convert_to_rgba(image_data)
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(mask_url) as resp:
-                mask_data = await resp.read()
+        mask_data = None
+        async with aiohttp.ClientSession() as mark_session:
+            async with mark_session.get(mask_url) as mark_resp:
+                mask_data = await mark_resp.read()
+                mask_data = BytesIO(mask_data)
+                mask_data = self.___convert_to_RGBA(mask_data)
+
         response = await openai.Image.acreate_edit(
             image=BytesIO(image_data),
             prompt=prompt,
-            mask=BytesIO(mask_data),
+            mask=mask_data,
             n=self.default_count,
             size=self.default_size,
             user=self.user,
         )
-        image_url = response["data"][0]["url"]
-        async with aiohttp.ClientSession() as session:
-            async with session.get(image_url) as resp:
-                image_data = await resp.read()
-        return Image.open(BytesIO(image_data))
+        self.___logger.debug(
+            "Image edited from URL %s using mask %s and prompt '%s', response: %s",
+            url,
+            mask_url,
+            prompt,
+            response["data"],
+        )
+        return response["data"]
+
+    async def edit_image_from_url_and_get_url(self, url, prompt, mask_url=None):
+        """
+        Edits an image using OpenAI's Image API, returns list of URLs with images.
+
+        :param url: A url of image to be edited.
+        :param prompt: The prompt to be used for image editing.
+        :param mask_url: Url containing mask image. If provided, the mask will be applied to the image.
+        :return: list of URLs
+        """
+        self.___logger.debug("Editing image from URL %s and getting URLs", url)
+        image_urls = []
+        for items in await self.edit_image_from_url(url, prompt, mask_url):
+            image_urls.append(items["url"])
+        self.___logger.debug(
+            "Image edited from URL %s using mask %s and prompt '%s', response: %s", url, mask_url, prompt, image_urls
+        )
+        return image_urls
+
+    async def edit_image_from_url_and_get_data(self, url, prompt, mask_url=None):
+        """
+        Edits an image using OpenAI's Image API, returns list of images (bytes format).
+
+        :param url: A url of image to be edited.
+        :param prompt: The prompt to be used for image editing.
+        :param mask_url: Url containing mask image. If provided, the mask will be applied to the image.
+        :return: list of images (bytes format).
+        """
+        self.___logger.debug("Editing image from URL %s and getting data", url)
+        tasks = []
+        for items in await self.edit_image_from_url(url, prompt, mask_url):
+            task = asyncio.ensure_future(self.convert_image_from_url_to_bytes(items["url"]))
+            tasks.append(task)
+        return_value = await asyncio.gather(*tasks)
+        self.___logger.debug(
+            "Image edited from URL %s using mask %s and prompt '%s', response: %s",
+            url,
+            mask_url,
+            prompt,
+            len(return_value),
+        )
+        return return_value
+
+    def ___set_auth(self, token, organization):
+        """
+        Method to set auth bearer.
+
+        :param token: authentication bearer token.
+        :param organization: organization, which drives the chat.
+        """
+        self.___logger.debug("Setting auth bearer")
+        openai.api_key = token
+        openai.organization = organization
+
+    async def ___convert_to_rgba(self, image_data):
+        """
+        Converts image to RGBA format.
+
+        :param image_data: image to convert.
+
+        :return: image in RGBA format.
+        """
+        self.___logger.debug("Converting image to RGBA format")
+        image = Image.open(BytesIO(image_data))
+        image = image.convert("RGBA")
+        image_data = BytesIO()
+        image.save(image_data, format="PNG")
+        return image_data.getvalue()
