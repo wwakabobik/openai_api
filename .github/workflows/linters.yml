@@ -45,6 +45,7 @@ jobs:
       id: mypy
       continue-on-error: true
       run: |
+        find . -name '*.py'
         mkdir -p .mypy_cache
         changed_files=$(git diff --diff-filter=d --name-only $(git merge-base HEAD origin/master) HEAD | grep '\.py$') || true
         echo $changed_files
