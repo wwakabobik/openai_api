@@ -69,17 +69,6 @@ class DALLE:
         self.___user = user
         self.___set_auth(auth_token, organization)
 
-    def ___set_auth(self, token, organization):
-        """
-        Method to set auth bearer.
-
-        :param token: authentication bearer token.
-        :param organization: organization, which drives the chat.
-        """
-        self.___logger.debug("Setting auth bearer")
-        openai.api_key = token
-        openai.organization = organization
-
     @property
     def default_count(self):
         """
@@ -180,6 +169,17 @@ class DALLE:
         self.___logger.debug("Setting logger...")
         self.___logger = value
 
+    def ___set_auth(self, token, organization):
+        """
+        Method to set auth bearer.
+
+        :param token: authentication bearer token.
+        :param organization: organization, which drives the chat.
+        """
+        self.___logger.debug("Setting auth bearer")
+        openai.api_key = token
+        openai.organization = organization
+
     async def create_image(self, prompt):
         """
         Creates an image using DALL-E Image API.
@@ -260,7 +260,7 @@ class DALLE:
         try:
             image.save(filename)
         except Exception as error:  # pylint: disable=W0718
-            print(f"Can't save image: {error}")
+            self.___logger.error("Can't save image: %s", error)
             return None
         self.___logger.debug("Image saved to %s", filename)
         return filename
@@ -394,9 +394,9 @@ class DALLE:
             async with session.get(url) as resp:
                 image_data = await resp.read()
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(mask_url) as resp:
-                mask_data = await resp.read()
+        async with aiohttp.ClientSession() as mark_session:
+            async with mark_session.get(mask_url) as mark_resp:
+                mask_data = await mark_resp.read()
         response = await openai.Image.acreate_edit(
             image=BytesIO(image_data),
             prompt=prompt,

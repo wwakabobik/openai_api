@@ -75,9 +75,10 @@ class ChatGPT:
         history_length: int = 5,
         chats: Optional[dict] = None,
         current_chat: Optional[str] = None,
+        chat_name_length: int = 40,
         prompt_method: bool = False,
         logger: Optional[logging.Logger] = None,
-        statistics: GPTStatistics = GPTStatistics(),
+        statistics: GPTStatistics = None,
         system_settings: Optional[str] = None,
         function_dict: Optional[dict] = None,
     ):
@@ -103,10 +104,12 @@ class ChatGPT:
         :param history_length: Length of history. Default is 5.
         :param chats: Chats dictionary, contains all chat. Default is None.
         :param current_chat: Default chat will be used. Default is None.
+        :param chat_name_length: Length of chat name. Default is 40.
         :param prompt_method: prompt method. Use messages if False, otherwise - prompt. Default if False.
         :param logger: default logger. Default is None.
         :param statistics: statistics logger. If none, will be initialized with zeros.
         :param system_settings: general system instructions for bot. Default is ''.
+
         """
         self.___logger = logger if logger else setup_logger("ChatGPT", "chatgpt.log", logging.DEBUG)
         self.___logger.debug("Initializing ChatGPT")
@@ -127,21 +130,11 @@ class ChatGPT:
         self.___history_length = history_length
         self.___chats = chats if chats else {}
         self.___current_chat = current_chat
+        self.___chat_name_length = chat_name_length
         self.___prompt_method = prompt_method
         self.___set_auth(auth_token, organization)
-        self.___statistics = statistics  # pylint: disable=W0238
+        self.___statistics = statistics if statistics else GPTStatistics()  # pylint: disable=W0238
         self.___system_settings = system_settings if system_settings else ""
-
-    def ___set_auth(self, token, organization):
-        """
-        Method to set auth bearer.
-
-        :param token: authentication bearer token.
-        :param organization: organization, which drives the chat.
-        """
-        self.___logger.debug("Setting auth bearer")
-        openai.api_key = token
-        openai.organization = organization
 
     @property
     def model(self):
@@ -543,6 +536,41 @@ class ChatGPT:
         self.___logger.debug("Setting logger...")
         self.___logger = value
 
+    async def __handle_chat_name(self, chat_name, prompt):
+        """
+        Handles the chat name. If chat_name is None, sets it to the first chat_name_length characters of the prompt.
+        If chat_name is not present in self.chats, adds it.
+
+        :param chat_name: Name of the chat.
+        :param prompt: Message from the user.
+        :return: Processed chat name.
+        """
+        if chat_name is None:
+            chat_name = prompt[:self.___chat_name_length]
+            self.current_chat = chat_name
+            self.___logger.debug(
+                "Chat name is None, setting it to the first %s characters of the prompt: %s", self.___chat_name_length, chat_name
+            )
+        else:
+            if len(chat_name) > self.___chat_name_length:
+                self.___logger.debug("Chat name is longer than %s characters, truncating it: %s", self.___chat_name_length, chat_name)
+                chat_name = chat_name[:self.___chat_name_length]
+        if chat_name not in self.chats:
+            self.___logger.debug("Chat name '%s' is not present in self.chats, adding it", chat_name)
+            self.chats[chat_name] = []
+        return chat_name
+
+    def ___set_auth(self, token, organization):
+        """
+        Method to set auth bearer.
+
+        :param token: authentication bearer token.
+        :param organization: organization, which drives the chat.
+        """
+        self.___logger.debug("Setting auth bearer")
+        openai.api_key = token
+        openai.organization = organization
+
     async def process_chat(self, prompt, default_choice=0, chat_name=None):
         """
         Creates a new chat completion for the provided messages and parameters.
@@ -627,9 +655,9 @@ class ChatGPT:
                         params["messages"].append(func_response)
                     else:
                         params["messages"].append(func_response)
-                    async for chunk in await openai.ChatCompletion.acreate(**params):
-                        yield chunk
-                        if chunk["choices"][default_choice]["finish_reason"] is not None:
+                    async for func_chunk in await openai.ChatCompletion.acreate(**params):
+                        yield func_chunk
+                        if func_chunk["choices"][default_choice]["finish_reason"] is not None:
                             break
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
@@ -657,30 +685,6 @@ class ChatGPT:
                     yield response
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
-
-    async def __handle_chat_name(self, chat_name, prompt):
-        """
-        Handles the chat name. If chat_name is None, sets it to the first 40 characters of the prompt.
-        If chat_name is not present in self.chats, adds it.
-
-        :param chat_name: Name of the chat.
-        :param prompt: Message from the user.
-        :return: Processed chat name.
-        """
-        if chat_name is None:
-            chat_name = prompt[:40]
-            self.current_chat = chat_name
-            self.___logger.debug(
-                "Chat name is None, setting it to the first 40 characters of the prompt: %s", chat_name
-            )
-        else:
-            if len(chat_name) > 40:
-                self.___logger.debug("Chat name is longer than 40 characters, truncating it: %s", chat_name)
-                chat_name = chat_name[:40]
-        if chat_name not in self.chats:
-            self.___logger.debug("Chat name '%s' is not present in self.chats, adding it", chat_name)
-            self.chats[chat_name] = []
-        return chat_name
 
     async def chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
         """

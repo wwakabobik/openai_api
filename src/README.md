@@ -2,6 +2,8 @@
 
 This package provides a Python API for [OpenAI](https://openai.com/), based on the official [API documentation](https://openai.com/blog/openai-api) and wraps-up original [OpenAI API](https://pypi.org/project/openai/).
 
+[![PyPI version](https://badge.fury.io/py/openai-api.svg)](https://badge.fury.io/py/openai-api)
+
 ## Installation
 
 To install the package, use the package from [pypi](https://pypi.org/project/openai-api/):
