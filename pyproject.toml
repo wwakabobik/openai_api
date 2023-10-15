@@ -9,6 +9,9 @@ keywords = ["openai", "chatgpt", "dalle", "dalle2", "ai", "artificial intelligen
 authors = [
   { name="Iliya Vereshchagin", email="i.vereshchagin@gmail.com" },
 ]
+maintainers = [
+  { name="Iliya Vereshchagin", email="i.vereshchagin@gmail.com" },
+]
 description = "OpenAI Python API"
 readme = "README.md"
 license = { file="LICENSE" }
@@ -33,6 +36,13 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
 ]
 
 install_requires = [
