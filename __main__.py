@@ -12,5 +12,5 @@ This file is entry point for project-wide structure.
 """
 
 # Engines
-from .src.openai_api.chatgpt import ChatGPT  # pylint: disable=unused-import
-from .src.openai_api.dalle import DALLE  # pylint: disable=unused-import
+from .src.openai_python_api.chatgpt import ChatGPT  # pylint: disable=unused-import
+from .src.openai_python_api.dalle import DALLE  # pylint: disable=unused-import

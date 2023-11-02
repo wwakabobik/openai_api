@@ -9,7 +9,7 @@ This package provides a Python API for [OpenAI](https://openai.com/), based on t
 To install the package, use the package from [pypi](https://pypi.org/project/openai-api/):
 
 ```bash
-pip install openai-api
+pip install openai_python_api
 ```
 
 This package contains API for ChatGPT and DALL-E2, but they not fully covered yet. More functionality will be added in the future.
@@ -25,7 +25,7 @@ The `ChatGPT` class is for managing an instance of the ChatGPT model.
 Here's a basic example of how to use the API:
 
 ```python
-from openai_api import ChatGPT
+from openai_python_api import ChatGPT
 
 # Use your API key and any organization you wish
 chatgpt = ChatGPT(auth_token='your-auth-token', organization='your-organization', prompt_method=True)
@@ -155,7 +155,7 @@ The `DALLE` class is for managing an instance of the DALL-E models. You can gene
 Here's a basic example of how to use the API:
 
 ```python
-from openai_api import DALLE
+from openai_python_api import DALLE
 
 # Use your API key and any organization you wish
 dalle = DALLE(auth_token='your-auth-token', organization='your-organization')
