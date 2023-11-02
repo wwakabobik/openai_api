@@ -9,7 +9,7 @@ This package provides a Python API for [OpenAI](https://openai.com/), based on t
 To install the package, use the package from [pypi](https://pypi.org/project/openai-api/):
 
 ```bash
-pip install openai-python-api
+pip install openai_python_api
 ```
 
 This package contains API for ChatGPT and DALL-E2, but they not fully covered yet. More functionality will be added in the future.
