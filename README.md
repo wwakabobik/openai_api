@@ -144,7 +144,7 @@ Now, when you're going to asking the ChatGPT about something, it will return rel
 
 ![Calling functions](https://raw.githubusercontent.com/wwakabobik/openai_api/master/assets/weather.gif)
 
-For details refer to [OpenAI API documentation](https://platform.openai.com/docs/guides/gpt/function-calling) for functions.
+For details refer to [OpenAI API documentation](https://platform.openai.com/docs/guides/gpt/function-calling) for functions or to [mine article](https://wwakabobik.github.io/2023/10/qa_ai_practices_used_for_qa/) (as example usage).
 
 ## DALL-E
 
