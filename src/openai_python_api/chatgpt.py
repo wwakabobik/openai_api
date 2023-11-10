@@ -13,10 +13,10 @@ This file contains implementation for ChatGPT.
 
 import json
 import logging
-from typing import Optional
+from typing import Optional, Literal
 from uuid import uuid4
 
-import openai
+from openai import AsyncOpenAI
 
 from .gpt_statistics import GPTStatistics
 from .logger_config import setup_logger
@@ -42,15 +42,19 @@ class ChatGPT:
     frequency_penalty (float, optional): The penalty for token frequency. Default is 0.
     logit_bias (map, optional): The bias for the logits before sampling. Default is None.
     user (str, optional): The user ID. Default is ''.
-    functions (list, optional): The list of functions. Default is None.
-    function_call (str, optional): The function call. Default is None.
-    function_dict (dict, optional): Dict of functions. Default is None.
+    functions (list, optional): The list of functions. Default is None.  # DEPRECATED
+    function_call (str, optional): The function call. Default is None.   # DEPRECATED
+    function_dict (dict, optional): Dict of functions. Default is None.  # DEPRECATED
+    tools (list, optional): The list of tools. Default is None.
+    tool_choice (str, optional): The tool call. Default is None.
+    tools_dict (str, optional): Dict of tools. Default is None.
     history_length (int, optional): Length of history. Default is 5.
     chats (dict, optional): Chats dictionary, contains all chats. Default is None.
     current_chat (str, optional): Default chat will be used. Default is None.
     prompt_method (bool, optional): prompt method. Use messages if False, otherwise - prompt. Default if False.
     logger (logging.Logger, optional): default logger. Default is None.
     statistic (GPTStatistics, optional): statistics logger. If none, will be initialized with zeros.
+    response_format (str, optional): response format. Default is None. Or might be { "type": "json_object" }.
     system_settings (str, optional): general instructions for chat. Default is None.
     """
 
@@ -70,8 +74,12 @@ class ChatGPT:
         frequency_penalty: float = 0,
         logit_bias: Optional[map] = None,
         user: str = "",
-        functions: Optional[list] = None,
-        function_call: Optional[str] = None,
+        functions: Optional[list] = None,  # deprecated
+        function_call: Optional[str] = None,  # deprecated
+        function_dict: Optional[dict] = None,  # deprecated
+        tools: Optional[list] = None,
+        tool_choice: Optional[str] = None,
+        tools_dict: Optional[dict] = None,
         history_length: int = 5,
         chats: Optional[dict] = None,
         current_chat: Optional[str] = None,
@@ -80,7 +88,7 @@ class ChatGPT:
         logger: Optional[logging.Logger] = None,
         statistics: Optional[GPTStatistics] = None,
         system_settings: Optional[str] = None,
-        function_dict: Optional[dict] = None,
+        response_format: str = "text",
     ):
         """
         General init
@@ -98,9 +106,12 @@ class ChatGPT:
         :param frequency_penalty: The penalty for token frequency. Default is 0.
         :param logit_bias: The bias for the logits before sampling. Default is None.
         :param user: The user ID. Default is ''.
-        :param functions: The list of functions. Default is None.
-        :param function_call: The function call. Default is None.
-        :param function_dict: Dict of functions. Default is None.
+        :param functions: The list of functions. Default is None.  # DEPRECATED
+        :param function_call: The function call. Default is None.  # DEPRECATED
+        :param function_dict: Dict of functions. Default is None.  # DEPRECATED
+        :param tools: The list of tools. Default is None.
+        :param tool_choice: The tool call. Default is None.
+        :param tools_dict: Dict of tools. Default is None.
         :param history_length: Length of history. Default is 5.
         :param chats: Chats dictionary, contains all chat. Default is None.
         :param current_chat: Default chat will be used. Default is None.
@@ -108,8 +119,8 @@ class ChatGPT:
         :param prompt_method: prompt method. Use messages if False, otherwise - prompt. Default if False.
         :param logger: default logger. Default is None.
         :param statistics: statistics logger. If none, will be initialized with zeros.
+        :param response_format: response format. Default is 'text', 'json'.
         :param system_settings: general system instructions for bot. Default is ''.
-
         """
         self.___logger = logger if logger else setup_logger("ChatGPT", "chatgpt.log", logging.DEBUG)
         self.___logger.debug("Initializing ChatGPT")
@@ -124,9 +135,12 @@ class ChatGPT:
         self.___frequency_penalty = frequency_penalty
         self.___logit_bias = logit_bias
         self.___user = user
-        self.___functions = functions
-        self.___function_call = function_call
-        self.___function_dict = function_dict
+        self.___functions = functions  # deprecated
+        self.___function_call = function_call  # deprecated
+        self.___function_dict = function_dict  # deprecated
+        self.___tools = tools
+        self.___tool_choice = tool_choice
+        self.___tools_dict = tools_dict
         self.___history_length = history_length
         self.___chats = chats if chats else {}
         self.___current_chat = current_chat
@@ -134,6 +148,7 @@ class ChatGPT:
         self.___prompt_method = prompt_method
         self.___set_auth(auth_token, organization)
         self.___statistics = statistics if statistics else GPTStatistics()  # pylint: disable=W0238
+        self.___response_format = response_format
         self.___system_settings = system_settings if system_settings else ""
 
     @property
@@ -417,6 +432,66 @@ class ChatGPT:
         self.___function_dict = value
 
     @property
+    def tools(self):
+        """
+        Getter for toold.
+
+        :return: The list of tools.
+        """
+        self.___logger.debug("Getting tools %s", self.___tools)
+        return self.___tools
+
+    @tools.setter
+    def tools(self, value):
+        """
+        Setter for tools.
+
+        :param value: The new list of tools.
+        """
+        self.___logger.debug("Setting tools %s", value)
+        self.___tools = value
+
+    @property
+    def tool_choice(self):
+        """
+        Getter for tool_choice.
+
+        :return: The tool choice.
+        """
+        self.___logger.debug("Getting tool_call %s", self.___tool_choice)
+        return self.___tool_choice
+
+    @tool_choice.setter
+    def tool_choice(self, value):
+        """
+        Setter for tool_choice.
+
+        :param value: The new tool_choice.
+        """
+        self.___logger.debug("Setting tool choice %s", value)
+        self.___tool_choice = value
+
+    @property
+    def tools_dict(self):
+        """
+        Getter for tools_dict.
+
+        :return: The tools_dict.
+        """
+        self.___logger.debug("Getting function_dict %s", self.___tools_dict)
+        return self.___tools_dict
+
+    @tools_dict.setter
+    def tools_dict(self, value):
+        """
+        Setter for tools_dict.
+
+        :param value: The new tools dict.
+        """
+        self.___logger.debug("Setting tools_dict %s", value)
+        self.___tools_dict = value
+
+    @property
     def history_length(self):
         """
         Getter for history_length.
@@ -517,6 +592,26 @@ class ChatGPT:
         self.___system_settings = value
 
     @property
+    def response_format(self):
+        """
+        Getter for response_format.
+
+        :return: The response format.
+        """
+        self.___logger.debug("Getting response_format %s", self.___response_format)
+        return self.___response_format
+
+    @response_format.setter
+    def response_format(self, value):
+        """
+        Setter for response_format.
+
+        :param value: The response format.
+        """
+        self.___logger.debug("Setting response_format %s", value)
+        self.___response_format = value
+
+    @property
     def logger(self):
         """
         Getter for logger.
@@ -566,9 +661,10 @@ class ChatGPT:
             "presence_penalty": self.presence_penalty,
             "frequency_penalty": self.frequency_penalty,
             "user": self.user,
-            "functions": self.functions,
-            "function_call": self.function_call,
+            "tools": self.tools,
+            "tool_choice": self.tool_choice,
             "stream": self.stream,
+            "response_format": self.___response_format
         }
 
         # Remove None values
@@ -585,7 +681,7 @@ class ChatGPT:
         func_call = {}
         if self.stream:
             try:
-                async for chunk in await openai.ChatCompletion.acreate(**params):
+                async for chunk in await AsyncOpenAI.chat.completions.create(**params):
                     if "function_call" in chunk["choices"][default_choice]["delta"]:
                         raw_call = chunk["choices"][default_choice]["delta"]["function_call"]  # noqa: WPS529
                         for key, value in raw_call.items():
@@ -616,14 +712,14 @@ class ChatGPT:
                         params["messages"].append(func_response)
                     else:
                         params["messages"].append(func_response)
-                    async for func_chunk in await openai.ChatCompletion.acreate(**params):
+                    async for func_chunk in await AsyncOpenAI.chat.completions.create(**params):
                         yield func_chunk
                         if func_chunk["choices"][default_choice]["finish_reason"] is not None:
                             break
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
         else:
-            response = await openai.ChatCompletion.acreate(**params)
+            response = await AsyncOpenAI.chat.completions.create(**params)
             if response["choices"][default_choice]["finish_reason"] == "function_call":
                 func_response = await self.process_function(
                     function_call=response["choices"][default_choice]["message"]["function_call"]
@@ -640,7 +736,7 @@ class ChatGPT:
                         params["messages"].append(func_response)
                     else:
                         params["messages"].append(func_response)
-                    response = await openai.ChatCompletion.acreate(**params)
+                    response = await AsyncOpenAI.chat.completions.create(**params)
                     yield response
                 else:
                     yield response
@@ -754,7 +850,13 @@ class ChatGPT:
         except GeneratorExit:
             self.___logger.debug("String chat ended with uid=%s", uid)
 
-    async def transcript(self, file, prompt=None, language="en", response_format="text"):
+    async def transcript(
+        self,
+        file,
+        prompt=None,
+        language="en",
+        response_format: Literal["text", "json", "srt", "verbose_json", "vtt"] = "text",
+    ):
         """
         Wrapper for the transcribe function. Returns only the content of the message.
 
@@ -771,7 +873,7 @@ class ChatGPT:
         kwargs = {}
         if prompt is not None:
             kwargs["prompt"] = prompt
-        response = await openai.Audio.atranscribe(
+        response = await AsyncOpenAI.audio.transcriptions.create(
             model=TRANSCRIPTIONS[0],
             file=file,
             language=language,
@@ -798,7 +900,7 @@ class ChatGPT:
         kwargs = {}
         if prompt is not None:
             kwargs["prompt"] = prompt
-        response = await openai.Audio.atranslate(
+        response = await AsyncOpenAI.audio.translations.create(
             model=TRANSLATIONS[0],
             file=file,
             response_format=response_format,
@@ -889,8 +991,8 @@ class ChatGPT:
         :param organization: organization, which drives the chat.
         """
         self.___logger.debug("Setting auth bearer")
-        openai.api_key = token
-        openai.organization = organization
+        AsyncOpenAI.api_key = token
+        AsyncOpenAI.organization = organization
 
     async def __handle_chat_name(self, chat_name, prompt):
         """

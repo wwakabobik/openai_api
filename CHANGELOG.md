@@ -22,3 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Updated
 - Metadata and README.md updated
+
+## [0.0.4] - 2023-11-02
+
+### Updated
+- Minor fixes
+
+## [0.0.5] - 2023-11-02
+
+### Updated
+- Minor fixes
+
+## [0.0.6] - 2023-11-10
+
+### Updated
+- Updated models (gpt-4-vision, gpt-4-turbo, dall-e-3)

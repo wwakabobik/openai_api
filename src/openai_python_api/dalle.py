@@ -5,7 +5,7 @@ Author: Iliya Vereshchagin
 Copyright (c) 2023. All rights reserved.
 
 Created: 25.08.2023
-Last Modified: 14.10.2023
+Last Modified: 10.11.2023
 
 Description:
 This file contains implementation for DALL-E2.
@@ -17,12 +17,13 @@ import os
 import tempfile
 import uuid
 from io import BytesIO
-from typing import Optional
+from typing import Optional, Literal
 
 import aiohttp
-import openai
 from PIL import Image
+from openai import AsyncOpenAI
 
+from models import DALLE as DALLE_MODELS
 from .logger_config import setup_logger
 
 
@@ -34,9 +35,12 @@ class DALLE:
     auth_token (str): Authentication bearer token. Required.
     organization (str): Organization uses auth toke. Required.
     default_count (int): Default count of images to produce. Default is 1.
-    default_size (str): Default dimensions for output images. Default is "512x512". "256x256" and "1024x1024" as option.
+    default_size (Literal): Default dimensions for output images. Default is "512x512".
     default_file_format (str): Default file format. Optional. Default is 'PNG'.
     user (str, optional): The user ID. Default is ''.
+    model (str, optional): The model ID. Default is 'dall-e-3'.
+    quality (str, optional): The quality of the image. Default is 'hd'. Possible values: 'hd', 'standard'.
+    style (str, optional): The style of the image. Default is 'natural'. Possible values: 'vivid', 'natural'.
     logger (logging.Logger, optional): default logger. Default is None.
     """
 
@@ -45,9 +49,12 @@ class DALLE:
         auth_token: str,
         organization: str,
         default_count: int = 1,
-        default_size: str = "512x512",
+        default_size: Literal["256x256", "512x512", "1024x1024", "1792x1024", "1024x1792"] = "512x512",
         default_file_format: str = "PNG",
         user: str = "",
+        model: str = DALLE_MODELS[0],
+        quality: Literal["hd", "standard"] = "hd",
+        style: Literal["vivid", "natural"] = "natural",
         logger: Optional[logging.Logger] = None,
     ):
         """
@@ -59,6 +66,9 @@ class DALLE:
         :param default_size:  Default dimensions for output images. Optional. Default is "512x512".
         :param default_file_format:  Default file format. Optional. Optional. Default is 'PNG'.
         :param user: The user ID. Optional. Default is ''.
+        :param model: The model ID. Optional. Default is 'dall-e-3'.
+        :param quality: The quality of the image. Optional. Default is 'hd'. Possible values: 'hd', 'standard'.
+        :param style: The style of the image. Optional. Default is 'natural'. Possible values: 'vivid', 'natural'.
         :param logger: default logger. Optional. Default is None.
         """
         self.___logger = logger if logger is not None else setup_logger("DALLE", "dalle.log", logging.DEBUG)
@@ -66,6 +76,9 @@ class DALLE:
         self.___default_count = default_count
         self.___default_size = default_size
         self.___default_file_format = default_file_format
+        self.___default_model = model
+        self.___default_quality = quality
+        self.___default_style = style
         self.___user = user
         self.___set_auth(auth_token, organization)
 
@@ -130,6 +143,26 @@ class DALLE:
         self.___default_file_format = value
 
     @property
+    def default_style(self):
+        """
+        Getter for default_style.
+
+        :return: Returns default_style value.
+        """
+        self.___logger.debug("Getting default_style %s", self.___default_style)
+        return self.___default_style
+
+    @default_style.setter
+    def default_style(self, value):
+        """
+        Setter for default_size.
+
+        :param value: The new value of default_file_format.
+        """
+        self.___logger.debug("Setting default_style %s", value)
+        self.___default_style = value
+
+    @property
     def user(self):
         """
         Getter for user.
@@ -148,6 +181,46 @@ class DALLE:
         """
         self.___logger.debug("Setting user %s", value)
         self.___user = value
+
+    @property
+    def default_quality(self):
+        """
+        Getter for default quality.
+
+        :return: The default quality.
+        """
+        self.___logger.debug("Getting default quality %s", self.___default_quality)
+        return self.___default_quality
+
+    @default_quality.setter
+    def default_quality(self, value):
+        """
+        Setter for default quality.
+
+        :param value: The user.
+        """
+        self.___logger.debug("Setting default quality %s", value)
+        self.___default_quality = value
+
+    @property
+    def default_model(self):
+        """
+        Getter for default model.
+
+        :return: The default model.
+        """
+        self.___logger.debug("Getting default model %s", self.___default_model)
+        return self.___default_model
+
+    @default_model.setter
+    def default_model(self, value):
+        """
+        Setter for default model.
+
+        :param value: The user.
+        """
+        self.___logger.debug("Setting default model %s", value)
+        self.___default_model = value
 
     @property
     def logger(self):
@@ -178,8 +251,14 @@ class DALLE:
         :return: A PIL.Image object created from the image data received from the API.
         """
         self.___logger.debug("Creating image using prompt %s", prompt)
-        response = await openai.Image.acreate(
-            prompt=prompt, n=self.default_count, size=self.default_size, user=self.user
+        response = await AsyncOpenAI.images.generate(
+            prompt=prompt,
+            n=self.default_count,
+            size=self.default_size,
+            user=self.user,
+            model=self.default_model,
+            quality=self.default_quality,
+            style=self.default_style,
         )
         self.___logger.debug("Image created, response: %s", response["data"])
         return response["data"]
@@ -213,7 +292,7 @@ class DALLE:
                 image_data = await resp.read()
                 image_data = self.___convert_to_rgba(image_data)
         self.___logger.debug("Image converted from URL %s to bytes format", url)
-        return Image.open(BytesIO(image_data))
+        return Image.open(BytesIO(await image_data))
 
     async def create_image_data(self, prompt):
         """
@@ -264,8 +343,8 @@ class DALLE:
         :return: A PIL.Image object created from the image data received from the API.
         """
         self.___logger.debug("Creating image variation from file")
-        response = await openai.Image.acreate_variation(
-            image=file, n=self.default_count, size=self.default_size, user=self.user
+        response = await AsyncOpenAI.images.create_variation(
+            image=file, n=self.default_count, size=self.default_size, user=self.user, model=self.default_model
         )
         self.___logger.debug("Image variation created from file, response: %s", response["data"])
         return response["data"]
@@ -314,10 +393,14 @@ class DALLE:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
-                image_data = self.___convert_to_rgba(image_data)
+                image_data = await self.___convert_to_rgba(image_data)
 
-        response = await openai.Image.acreate_variation(
-            image=BytesIO(image_data), n=self.default_count, size=self.default_size, user=self.user
+        response = await AsyncOpenAI.images.create_variation(
+            image=BytesIO(image_data),
+            n=self.default_count,
+            size=self.default_size,
+            user=self.user,
+            model=self.default_model,
         )
         self.___logger.debug("Image variation created from URL %s, response: %s", url, response["data"])
         return response["data"]
@@ -365,8 +448,14 @@ class DALLE:
         :return: A PIL.Image object created from the image data received from the API.
         """
         self.___logger.debug("Editing image from file using mask and prompt '%s'", prompt)
-        response = await openai.Image.acreate_edit(
-            image=file, prompt=prompt, mask=mask, n=self.default_count, size=self.default_size, user=self.user
+        response = await AsyncOpenAI.images.edit(
+            image=file,
+            prompt=prompt,
+            mask=mask,
+            n=self.default_count,
+            size=self.default_size,
+            user=self.user,
+            model=self.default_model,
         )
         self.___logger.debug("Image edited from file, mask and prompt '%s', response: %s", prompt, response["data"])
         return response["data"]
@@ -384,22 +473,22 @@ class DALLE:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 image_data = await resp.read()
-                image_data = self.___convert_to_rgba(image_data)
+                image_data = await self.___convert_to_rgba(image_data)
 
-        mask_data = None
         async with aiohttp.ClientSession() as mark_session:
             async with mark_session.get(mask_url) as mark_resp:
                 mask_data = await mark_resp.read()
                 mask_data = BytesIO(mask_data)
-                mask_data = self.___convert_to_RGBA(mask_data)
+                mask_data = await self.___convert_to_rgba(mask_data)
 
-        response = await openai.Image.acreate_edit(
+        response = await AsyncOpenAI.images.edit(
             image=BytesIO(image_data),
             prompt=prompt,
             mask=mask_data,
             n=self.default_count,
             size=self.default_size,
             user=self.user,
+            model=self.default_model,
         )
         self.___logger.debug(
             "Image edited from URL %s using mask %s and prompt '%s', response: %s",
@@ -460,8 +549,8 @@ class DALLE:
         :param organization: organization, which drives the chat.
         """
         self.___logger.debug("Setting auth bearer")
-        openai.api_key = token
-        openai.organization = organization
+        AsyncOpenAI.api_key = token
+        AsyncOpenAI.organization = organization
 
     async def ___convert_to_rgba(self, image_data):
         """
