@@ -4,7 +4,6 @@ ChatGPT:
 - Split up GPT class into several classes and files (transcript, translate, completion, etc.)
 - Add statistics logging
 - Add assistants logic
-- Add BEARER_TOKEN to .env
 - Add TTS
 - Add models API
 - Add files

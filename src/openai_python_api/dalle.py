@@ -12,6 +12,7 @@ This file contains implementation for DALL-E2.
 """
 
 import asyncio
+import json
 import logging
 import os
 import tempfile
@@ -23,8 +24,8 @@ import aiohttp
 from PIL import Image
 from openai import AsyncOpenAI
 
-from models import DALLE as DALLE_MODELS
 from .logger_config import setup_logger
+from .models import DALLE_MODELS
 
 
 class DALLE:
@@ -46,10 +47,10 @@ class DALLE:
 
     def __init__(
         self,
-        auth_token: str,
-        organization: str,
+        auth_token: Optional[str] = None,
+        organization: Optional[str] = None,
         default_count: int = 1,
-        default_size: Literal["256x256", "512x512", "1024x1024", "1792x1024", "1024x1792"] = "512x512",
+        default_size: Literal["256x256", "512x512", "1024x1024", "1792x1024", "1024x1792"] = "1024x1024",
         default_file_format: str = "PNG",
         user: str = "",
         model: str = DALLE_MODELS[0],
@@ -60,8 +61,8 @@ class DALLE:
         """
         General init
 
-        :param auth_token (str): Authentication bearer token. Required.
-        :param organization (str): Organization uses auth toke. Required.
+        :param auth_token (str): Authentication bearer token. If None, will be taken from env OPENAI_API_KEY.
+        :param organization (str): Organization uses auth token. If None, will be taken from env OPENAI_ORGANIZATION.
         :param default_count:  Default count of images to produce. Optional. Default is 1.
         :param default_size:  Default dimensions for output images. Optional. Default is "512x512".
         :param default_file_format:  Default file format. Optional. Optional. Default is 'PNG'.
@@ -80,7 +81,12 @@ class DALLE:
         self.___default_quality = quality
         self.___default_style = style
         self.___user = user
-        self.___set_auth(auth_token, organization)
+        auth_token = auth_token if auth_token is not None else os.environ.get("OPENAI_API_KEY")
+        organization = organization if organization is not None else os.environ.get("OPENAI_ORGANIZATION")
+        self.___engine = AsyncOpenAI(api_key=auth_token, organization=organization)
+        # Validate settings
+        if not self.___validate_image_size() or not self.___validate_model():
+            raise ValueError("Invalid settings provided!")
 
     @property
     def default_count(self):
@@ -120,7 +126,8 @@ class DALLE:
         :param value: The new value of  default_size.
         """
         self.___logger.debug("Setting default_size %s", value)
-        self.___default_size = value
+        if self.___validate_image_size():
+            self.___default_size = value
 
     @property
     def default_file_format(self):
@@ -220,7 +227,8 @@ class DALLE:
         :param value: The user.
         """
         self.___logger.debug("Setting default model %s", value)
-        self.___default_model = value
+        if self.___validate_model():
+            self.___default_model = value
 
     @property
     def logger(self):
@@ -242,16 +250,43 @@ class DALLE:
         self.___logger.debug("Setting logger...")
         self.___logger = value
 
+    def ___validate_image_size(self):
+        """
+        Validate image size.
+
+        :return: True if image size is valid, False otherwise.
+        """
+        self.___logger.debug("Validating image size...")
+        if (self.default_size not in ["256x256", "512x512", "1024x1024"] and self.default_model == DALLE_MODELS[1]) or (
+            self.___default_size not in ["1024x1024", "1792x1024", "1024x1792"]
+            and self.default_model == DALLE_MODELS[0]
+        ):
+            self.___logger.error("Image size is invalid!")
+            return False
+        return True
+
+    def ___validate_model(self):
+        """
+        Validate model.
+
+        :return: True if model is valid, False otherwise.
+        """
+        self.___logger.debug("Validating model...")
+        if self.default_model not in DALLE_MODELS:
+            self.___logger.error("Model is invalid!")
+            return False
+        return True
+
     async def create_image(self, prompt):
         """
         Creates an image using DALL-E Image API.
 
         :param prompt: The prompt to be used for image creation.
 
-        :return: A PIL.Image object created from the image data received from the API.
+        :return: A data dict created from the image data received from the API.
         """
-        self.___logger.debug("Creating image using prompt %s", prompt)
-        response = await AsyncOpenAI.images.generate(
+        self.___logger.debug("Creating image using prompt: '%s'", prompt)
+        response = await self.___engine.images.generate(
             prompt=prompt,
             n=self.default_count,
             size=self.default_size,
@@ -260,8 +295,13 @@ class DALLE:
             quality=self.default_quality,
             style=self.default_style,
         )
-        self.___logger.debug("Image created, response: %s", response["data"])
-        return response["data"]
+        try:
+            data = json.loads(response.model_dump_json())["data"]
+            self.___logger.debug("Image created, response: %s", data)
+        except Exception as error:
+            self.___logger.error("Can't parse response: %s", error)
+            return None
+        return data
 
     async def create_image_url(self, prompt):
         """
@@ -340,14 +380,19 @@ class DALLE:
 
         :param file: file of the image (bytes).
 
-        :return: A PIL.Image object created from the image data received from the API.
+        :return: A data dict object created from the image data received from the API.
         """
         self.___logger.debug("Creating image variation from file")
-        response = await AsyncOpenAI.images.create_variation(
+        response = await self.___engine.images.create_variation(
             image=file, n=self.default_count, size=self.default_size, user=self.user, model=self.default_model
         )
-        self.___logger.debug("Image variation created from file, response: %s", response["data"])
-        return response["data"]
+        try:
+            data = json.loads(response.model_dump_json())["data"]
+            self.___logger.debug("Image variation created from file, response: %s", data)
+        except Exception as error:
+            self.___logger.error("Can't parse response: %s", error)
+            return None
+        return data
 
     async def create_variation_from_file_and_get_url(self, file):
         """
@@ -387,7 +432,7 @@ class DALLE:
 
         :param url: URL of the image.
 
-        :return: A PIL.Image object created from the image data received from the API.
+        :return: A data dict object created from the image data received from the API.
         """
         self.___logger.debug("Creating image variation from URL %s", url)
         async with aiohttp.ClientSession() as session:
@@ -395,15 +440,20 @@ class DALLE:
                 image_data = await resp.read()
                 image_data = await self.___convert_to_rgba(image_data)
 
-        response = await AsyncOpenAI.images.create_variation(
+        response = await self.___engine.images.create_variation(
             image=BytesIO(image_data),
             n=self.default_count,
             size=self.default_size,
             user=self.user,
             model=self.default_model,
         )
-        self.___logger.debug("Image variation created from URL %s, response: %s", url, response["data"])
-        return response["data"]
+        try:
+            data = json.loads(response.model_dump_json())["data"]
+            self.___logger.debug("Image variation created from URL %s, response: %s", url, data)
+        except Exception as error:
+            self.___logger.error("Can't parse response: %s", error)
+            return None
+        return data
 
     async def create_variation_from_url_and_get_url(self, url):
         """
@@ -445,10 +495,10 @@ class DALLE:
         :param prompt: The prompt to be used for image editing.
         :param mask: An optional file-like object opened in binary mode containing the mask image.
                      If provided, the mask will be applied to the image.
-        :return: A PIL.Image object created from the image data received from the API.
+        :return: A data dict created from the image data received from the API.
         """
         self.___logger.debug("Editing image from file using mask and prompt '%s'", prompt)
-        response = await AsyncOpenAI.images.edit(
+        response = await self.___engine.images.edit(
             image=file,
             prompt=prompt,
             mask=mask,
@@ -457,8 +507,13 @@ class DALLE:
             user=self.user,
             model=self.default_model,
         )
-        self.___logger.debug("Image edited from file, mask and prompt '%s', response: %s", prompt, response["data"])
-        return response["data"]
+        try:
+            data = json.loads(response.model_dump_json())["data"]
+            self.___logger.debug("Image edited from file, mask and prompt '%s', response: %s", prompt, data)
+        except Exception as error:
+            self.___logger.error("Can't parse response: %s", error)
+            return None
+        return data
 
     async def edit_image_from_url(self, url, prompt, mask_url=None):
         """
@@ -467,7 +522,7 @@ class DALLE:
         :param url: A url of image to be edited.
         :param prompt: The prompt to be used for image editing.
         :param mask_url: Url containing mask image. If provided, the mask will be applied to the image.
-        :return: A PIL.Image object created from the image data received from the API.
+        :return: A data dict created from the image data received from the API.
         """
         self.___logger.debug("Editing image from URL %s", url)
         async with aiohttp.ClientSession() as session:
@@ -481,7 +536,7 @@ class DALLE:
                 mask_data = BytesIO(mask_data)
                 mask_data = await self.___convert_to_rgba(mask_data)
 
-        response = await AsyncOpenAI.images.edit(
+        response = await self.___engine.images.edit(
             image=BytesIO(image_data),
             prompt=prompt,
             mask=mask_data,
@@ -490,14 +545,19 @@ class DALLE:
             user=self.user,
             model=self.default_model,
         )
-        self.___logger.debug(
-            "Image edited from URL %s using mask %s and prompt '%s', response: %s",
-            url,
-            mask_url,
-            prompt,
-            response["data"],
-        )
-        return response["data"]
+        try:
+            data = json.loads(response.model_dump_json())["data"]
+            self.___logger.debug(
+                "Image edited from URL %s using mask %s and prompt '%s', response: %s",
+                url,
+                mask_url,
+                prompt,
+                data,
+            )
+        except Exception as error:
+            self.___logger.error("Can't parse response: %s", error)
+            return None
+        return data
 
     async def edit_image_from_url_and_get_url(self, url, prompt, mask_url=None):
         """
@@ -540,17 +600,6 @@ class DALLE:
             len(return_value),
         )
         return return_value
-
-    def ___set_auth(self, token, organization):
-        """
-        Method to set auth bearer.
-
-        :param token: authentication bearer token.
-        :param organization: organization, which drives the chat.
-        """
-        self.___logger.debug("Setting auth bearer")
-        AsyncOpenAI.api_key = token
-        AsyncOpenAI.organization = organization
 
     async def ___convert_to_rgba(self, image_data):
         """

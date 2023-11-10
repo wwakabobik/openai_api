@@ -5,7 +5,7 @@ Author: Iliya Vereshchagin
 Copyright (c) 2023. All rights reserved.
 
 Created: 25.08.2023
-Last Modified: 25.08.2023
+Last Modified: 10.11.2023
 
 Description:
 This file contains OpenAI constants
@@ -13,9 +13,9 @@ This file contains OpenAI constants
 
 COMPLETIONS = (
     # GPT-4
+    "gpt-4",
     "gpt-4-1106-preview",
     "gpt-4-vision-preview",
-    "gpt-4",
     "gpt-4-0613",
     "gpt-4-32k",
     "gpt-4-32k-0613",
@@ -34,7 +34,7 @@ COMPLETIONS = (
     "code-davinci-002"
 
 )
-DALLE = ("dall-e-3", "dall-e-2")
+DALLE_MODELS = ("dall-e-3", "dall-e-2")
 TRANSCRIPTIONS = ("whisper-1",)
 TRANSLATIONS = ("whisper-1",)
 FINE_TUNES = ("davinci", "curie", "babbage", "ada")

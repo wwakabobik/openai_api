@@ -5,13 +5,14 @@ Author: Iliya Vereshchagin
 Copyright (c) 2023. All rights reserved.
 
 Created: 25.08.2023
-Last Modified: 14.10.2023
+Last Modified: 10.11.2023
 
 Description:
 This file contains implementation for ChatGPT.
 """
 
 import json
+from os import environ
 import logging
 from typing import Optional, Literal
 from uuid import uuid4
@@ -29,7 +30,7 @@ class ChatGPT:
     The ChatGPT class is for managing an instance of the ChatGPT model.
 
     Parameters:
-    auth_token (str): Authentication bearer token. Required.
+    auth_token (str): Authentication bearer token.
     organization (str): Organization uses auth toke. Required.
     model (str): The name of the model, Default is 'gpt-4'.
     choices (int, optional): The number of response options. Default is 1.
@@ -61,8 +62,8 @@ class ChatGPT:
     def __init__(
         # pylint: disable=too-many-locals
         self,
-        auth_token: str,
-        organization: str,
+        auth_token: Optional[str],
+        organization: Optional[str],
         model: str = COMPLETIONS[0],
         choices: int = 1,
         temperature: float = 1,
@@ -88,13 +89,13 @@ class ChatGPT:
         logger: Optional[logging.Logger] = None,
         statistics: Optional[GPTStatistics] = None,
         system_settings: Optional[str] = None,
-        response_format: str = "text",
+        response_format: Optional[str] = None,
     ):
         """
         General init
 
-        :param auth_token (str): Authentication bearer token. Required.
-        :param organization (str): Organization uses auth toke. Required.
+        :param auth_token (str): Authentication bearer token. If None, will be taken from env OPENAI_API_KEY.
+        :param organization (str): Organization uses auth toke. If None, will be taken from env OPENAI_ORGANIZATION.
         :param model: The name of the model.
         :param choices: The number of response options. Default is 1.
         :param temperature: The temperature of the model's output. Default is 1.
@@ -146,10 +147,12 @@ class ChatGPT:
         self.___current_chat = current_chat
         self.___chat_name_length = chat_name_length
         self.___prompt_method = prompt_method
-        self.___set_auth(auth_token, organization)
         self.___statistics = statistics if statistics else GPTStatistics()  # pylint: disable=W0238
         self.___response_format = response_format
         self.___system_settings = system_settings if system_settings else ""
+        auth_token = auth_token if auth_token is not None else environ.get("OPENAI_API_KEY")
+        organization = organization if organization is not None else environ.get("OPENAI_ORGANIZATION")
+        self.___engine = AsyncOpenAI(api_key=auth_token, organization=organization)
 
     @property
     def model(self):
@@ -681,7 +684,8 @@ class ChatGPT:
         func_call = {}
         if self.stream:
             try:
-                async for chunk in await AsyncOpenAI.chat.completions.create(**params):
+                async for chunk in await self.___engine.chat.completions.create(**params):
+                    chunk = json.loads(chunk.model_dump_json())
                     if "function_call" in chunk["choices"][default_choice]["delta"]:
                         raw_call = chunk["choices"][default_choice]["delta"]["function_call"]  # noqa: WPS529
                         for key, value in raw_call.items():
@@ -700,6 +704,8 @@ class ChatGPT:
                             yield chunk
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
+            except Exception as error:
+                self.___logger.error("Error while processing chat: %s", error)
             try:
                 if func_response:
                     # Save to history
@@ -712,19 +718,20 @@ class ChatGPT:
                         params["messages"].append(func_response)
                     else:
                         params["messages"].append(func_response)
-                    async for func_chunk in await AsyncOpenAI.chat.completions.create(**params):
+                    async for func_chunk in await self.___engine.chat.completions.create(**params):
                         yield func_chunk
                         if func_chunk["choices"][default_choice]["finish_reason"] is not None:
                             break
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
         else:
-            response = await AsyncOpenAI.chat.completions.create(**params)
-            if response["choices"][default_choice]["finish_reason"] == "function_call":
-                func_response = await self.process_function(
-                    function_call=response["choices"][default_choice]["message"]["function_call"]
-                )
+            response = await self.___engine.chat.completions.create(**params)
+            response = json.loads(response.model_dump_json())
             try:
+                if response["choices"][default_choice]["finish_reason"] == "function_call":
+                    func_response = await self.process_function(
+                        function_call=response["choices"][default_choice]["message"]["function_call"]
+                    )
                 if func_response:
                     # Save to history
                     if chat_name:
@@ -736,12 +743,14 @@ class ChatGPT:
                         params["messages"].append(func_response)
                     else:
                         params["messages"].append(func_response)
-                    response = await AsyncOpenAI.chat.completions.create(**params)
+                    response = await self.___engine.chat.completions.create(**params)
                     yield response
                 else:
                     yield response
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
+            except Exception as error:
+                self.___logger.error("Error while processing chat: %s", error)
 
     async def chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
         """
@@ -813,7 +822,7 @@ class ChatGPT:
             # Add last response to chat
             record = {"role": "assistant", "content": full_prompt}
             self.chats[chat_name].append(record)
-            self.___logger.debug("Recorded added to chat '%s': %s", chat_name, record)
+            self.___logger.debug("Record added to chat '%s': %s", chat_name, record)
 
     async def str_chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
         """
@@ -982,17 +991,6 @@ class ChatGPT:
             return json.dumps({})
         self.___logger.debug("Dumped %s records in chat %s", len(self.chats[chat_name]), chat_name)
         return json.dumps(self.chats[chat_name])
-
-    def ___set_auth(self, token, organization):
-        """
-        Method to set auth bearer.
-
-        :param token: authentication bearer token.
-        :param organization: organization, which drives the chat.
-        """
-        self.___logger.debug("Setting auth bearer")
-        AsyncOpenAI.api_key = token
-        AsyncOpenAI.organization = organization
 
     async def __handle_chat_name(self, chat_name, prompt):
         """
