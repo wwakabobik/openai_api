@@ -20,8 +20,7 @@ COMPLETIONS = (
     "gpt-4-32k",
     "gpt-4-32k-0613",
     # GPT-3
-    "gpt-3.5-turbo-1106"
-    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-1106" "gpt-3.5-turbo",
     "gpt-3.5-turbo-16k",
     # DEPRECATION WARNING: GPT-3
     "gpt-3.5-turbo-0613",
@@ -31,8 +30,7 @@ COMPLETIONS = (
     "gpt-3.5-turbo-instruct",
     "text-davinci-003",
     "text-davinci-002",
-    "code-davinci-002"
-
+    "code-davinci-002",
 )
 DALLE_MODELS = ("dall-e-3", "dall-e-2")
 TRANSCRIPTIONS = ("whisper-1",)

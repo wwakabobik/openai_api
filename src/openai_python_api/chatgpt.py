@@ -12,8 +12,8 @@ This file contains implementation for ChatGPT.
 """
 
 import json
-from os import environ
 import logging
+from os import environ
 from typing import Optional, Literal
 from uuid import uuid4
 
@@ -437,7 +437,7 @@ class ChatGPT:
     @property
     def tools(self):
         """
-        Getter for toold.
+        Getter for tools.
 
         :return: The list of tools.
         """
