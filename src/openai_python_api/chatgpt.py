@@ -960,7 +960,7 @@ class ChatGPT:
 
         :param chat_name: Name of the chat.
         :param prompt: Message from the user.
-        :return:Processed chat name, string.
+        :return: Processed chat name, string.
         """
         if chat_name is None:
             chat_name = prompt[: self.___chat_name_length]
