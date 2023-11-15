@@ -587,10 +587,14 @@ class DALLE:
         :return: True if image size is valid, False otherwise.
         """
         self.___logger.debug("Validating image size...")
-        if (self.default_size not in {"256x256", "512x512", "1024x1024"} and self.default_model == DALLE_MODELS[1]) or (
-            self.___default_size not in {"1024x1024", "1792x1024", "1024x1792"}
+        dalle_2_validation = (
+            self.default_size not in {"256x256", "512x512", "1024x1024"} and self.default_model == DALLE_MODELS[1]
+        )
+        dalle_3_validation = (
+            self.default_size not in {"256x256", "512x512", "1024x1024", "1792x1024", "1024x1792"}
             and self.default_model == DALLE_MODELS[0]
-        ):
+        )
+        if dalle_2_validation or dalle_3_validation:
             self.___logger.error("Image size is invalid!")
             return False
         return True
