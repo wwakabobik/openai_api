@@ -28,6 +28,7 @@ from .logger_config import setup_logger
 from .models import DALLE_MODELS
 
 
+# pylint: disable=too-many-instance-attributes
 class DALLE:
     """
     The DALLE class is for managing an instance of the DALLE model.
@@ -298,7 +299,7 @@ class DALLE:
         try:
             data = json.loads(response.model_dump_json())["data"]
             self.___logger.debug("Image created, response: %s", data)
-        except Exception as error:
+        except Exception as error:  # pylint: disable=W0718
             self.___logger.error("Can't parse response: %s", error)
             return None
         return data
@@ -389,7 +390,7 @@ class DALLE:
         try:
             data = json.loads(response.model_dump_json())["data"]
             self.___logger.debug("Image variation created from file, response: %s", data)
-        except Exception as error:
+        except Exception as error:  # pylint: disable=W0718
             self.___logger.error("Can't parse response: %s", error)
             return None
         return data
@@ -450,7 +451,7 @@ class DALLE:
         try:
             data = json.loads(response.model_dump_json())["data"]
             self.___logger.debug("Image variation created from URL %s, response: %s", url, data)
-        except Exception as error:
+        except Exception as error:  # pylint: disable=W0718
             self.___logger.error("Can't parse response: %s", error)
             return None
         return data
@@ -510,7 +511,7 @@ class DALLE:
         try:
             data = json.loads(response.model_dump_json())["data"]
             self.___logger.debug("Image edited from file, mask and prompt '%s', response: %s", prompt, data)
-        except Exception as error:
+        except Exception as error:  # pylint: disable=W0718
             self.___logger.error("Can't parse response: %s", error)
             return None
         return data
@@ -554,7 +555,7 @@ class DALLE:
                 prompt,
                 data,
             )
-        except Exception as error:
+        except Exception as error:  # pylint: disable=W0718
             self.___logger.error("Can't parse response: %s", error)
             return None
         return data
