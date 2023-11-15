@@ -635,7 +635,7 @@ class ChatGPT:
             "tools": self.tools,
             "tool_choice": self.tool_choice,
             "stream": self.stream,
-            "response_format": self.___response_format
+            "response_format": self.___response_format,
         }
 
         # Remove None values
@@ -672,7 +672,7 @@ class ChatGPT:
                             yield chunk
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
-            except Exception as error:
+            except Exception as error:  # pylint: disable=W0718
                 self.___logger.error("Error while processing chat: %s", error)
             try:
                 if func_response:
@@ -717,7 +717,7 @@ class ChatGPT:
                     yield response
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
-            except Exception as error:
+            except Exception as error:  # pylint: disable=W0718
                 self.___logger.error("Error while processing chat: %s", error)
 
     async def chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
