@@ -5,7 +5,7 @@ Author: Iliya Vereshchagin
 Copyright (c) 2023. All rights reserved.
 
 Created: 25.08.2023
-Last Modified: 10.11.2023
+Last Modified: 15.11.2023
 
 Description:
 This file contains implementation for ChatGPT.
@@ -26,38 +26,7 @@ from .models import COMPLETIONS, TRANSCRIPTIONS, TRANSLATIONS
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 class ChatGPT:
-    """
-    The ChatGPT class is for managing an instance of the ChatGPT model.
-
-    Parameters:
-    auth_token (str): Authentication bearer token.
-    organization (str): Organization uses auth toke. Required.
-    model (str): The name of the model, Default is 'gpt-4'.
-    choices (int, optional): The number of response options. Default is 1.
-    temperature (float, optional): The temperature of the model's output. Default is 1.
-    top_p (float, optional): The top-p value for nucleus sampling. Default is 1.
-    stream (bool, optional): If True, the model will return intermediate results. Default is False.
-    stop (str, optional): The stop sequence at which the model should stop generating further tokens. Default is None.
-    max_tokens (int, optional): The maximum number of tokens in the output. Default is 1024.
-    presence_penalty (float, optional): The penalty for new token presence. Default is 0.
-    frequency_penalty (float, optional): The penalty for token frequency. Default is 0.
-    logit_bias (map, optional): The bias for the logits before sampling. Default is None.
-    user (str, optional): The user ID. Default is ''.
-    functions (list, optional): The list of functions. Default is None.  # DEPRECATED
-    function_call (str, optional): The function call. Default is None.   # DEPRECATED
-    function_dict (dict, optional): Dict of functions. Default is None.  # DEPRECATED
-    tools (list, optional): The list of tools. Default is None.
-    tool_choice (str, optional): The tool call. Default is None.
-    tools_dict (str, optional): Dict of tools. Default is None.
-    history_length (int, optional): Length of history. Default is 5.
-    chats (dict, optional): Chats dictionary, contains all chats. Default is None.
-    current_chat (str, optional): Default chat will be used. Default is None.
-    prompt_method (bool, optional): prompt method. Use messages if False, otherwise - prompt. Default if False.
-    logger (logging.Logger, optional): default logger. Default is None.
-    statistic (GPTStatistics, optional): statistics logger. If none, will be initialized with zeros.
-    response_format (str, optional): response format. Default is None. Or might be { "type": "json_object" }.
-    system_settings (str, optional): general instructions for chat. Default is None.
-    """
+    """The ChatGPT class is for managing an instance of the ChatGPT model."""
 
     def __init__(
         # pylint: disable=too-many-locals
@@ -120,7 +89,7 @@ class ChatGPT:
         :param prompt_method: prompt method. Use messages if False, otherwise - prompt. Default if False.
         :param logger: default logger. Default is None.
         :param statistics: statistics logger. If none, will be initialized with zeros.
-        :param response_format: response format. Default is 'text', 'json'.
+        :param response_format: response format. Default is None. Or might be { "type": "json_object" }.
         :param system_settings: general system instructions for bot. Default is ''.
         """
         self.___logger = logger if logger else setup_logger("ChatGPT", "chatgpt.log", logging.DEBUG)
@@ -641,7 +610,6 @@ class ChatGPT:
         :param prompt: The prompt to pass to the model.
         :param default_choice: Default number of choice to monitor for stream end. By default, is None.
         :param chat_name: Chat name for function tracking. Should be handled by caller. By default, is None.
-
         :return: Returns answers by chunk if 'stream' is false True, otherwise return complete answer.
         """
         # pylint: disable=too-many-branches
@@ -832,7 +800,6 @@ class ChatGPT:
         :param chat_name: Name of the chat. If None, uses self.current_chat.
         :param default_choice: Index of the model's response choice.
         :param extra_settings: Extra system settings for chat. Default is ''.
-
         :return: Content of the message.
         """
         uid = str(uuid4())
@@ -874,8 +841,6 @@ class ChatGPT:
         :param language: Language on which audio is. Default is 'en'.
         :param response_format: default response format, by default is 'text'.
                                 Possible values are: json, text, srt, verbose_json, or vtt.
-
-
         :return: transcription (text, json, srt, verbose_json or vtt)
         """
         self.___logger.debug("Transcribing file in %s with prompt '%s' to %s format", language, prompt, response_format)
@@ -895,14 +860,12 @@ class ChatGPT:
 
     async def translate(self, file, prompt=None, response_format="text"):
         """
-        Wrapper for the translate function. Returns only the content of the message.
+        Wrapper for the 'translate' function. Returns only the content of the message.
 
         :param file: Path with filename to transcript.
         :param prompt: Previous prompt. Default is None.
         :param response_format: default response format, by default is 'text'.
                                Possible values are: json, text, srt, verbose_json, or vtt.
-
-
         :return: transcription (text, json, srt, verbose_json or vtt)
         """
         self.___logger.debug("Translating file with prompt '%s' to %s format", prompt, response_format)
@@ -924,7 +887,6 @@ class ChatGPT:
         Process function requested by ChatGPT.
 
         :param function_call: Function name and arguments. In JSON format.
-
         :return: transcription (text, json, srt, verbose_json or vtt)
         """
         self.___logger.debug("Processing function call: %s", function_call)
@@ -983,7 +945,6 @@ class ChatGPT:
         Dumps chat to JSON.
 
         :param chat_name: Name of the chat.
-
         :return: JSON with chat.
         """
         if chat_name not in self.chats:
@@ -999,7 +960,7 @@ class ChatGPT:
 
         :param chat_name: Name of the chat.
         :param prompt: Message from the user.
-        :return: Processed chat name.
+        :return:Processed chat name, string.
         """
         if chat_name is None:
             chat_name = prompt[: self.___chat_name_length]
