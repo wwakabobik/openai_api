@@ -241,33 +241,6 @@ class DALLE:
         self.___logger.debug("Setting logger...")
         self.___logger = value
 
-    def ___validate_image_size(self):
-        """
-        Validate image size.
-
-        :return: True if image size is valid, False otherwise.
-        """
-        self.___logger.debug("Validating image size...")
-        if (self.default_size not in {"256x256", "512x512", "1024x1024"} and self.default_model == DALLE_MODELS[1]) or (
-            self.___default_size not in {"1024x1024", "1792x1024", "1024x1792"}
-            and self.default_model == DALLE_MODELS[0]
-        ):
-            self.___logger.error("Image size is invalid!")
-            return False
-        return True
-
-    def ___validate_model(self):
-        """
-        Validate model.
-
-        :return: True if model is valid, False otherwise.
-        """
-        self.___logger.debug("Validating model...")
-        if self.default_model not in DALLE_MODELS:
-            self.___logger.error("Model is invalid!")
-            return False
-        return True
-
     async def create_image(self, prompt):
         """
         Creates an image using DALL-E Image API.
@@ -606,3 +579,30 @@ class DALLE:
         image_data = BytesIO()
         image.save(image_data, format="PNG")
         return image_data.getvalue()
+
+    def ___validate_image_size(self):
+        """
+        Validate image size.
+
+        :return: True if image size is valid, False otherwise.
+        """
+        self.___logger.debug("Validating image size...")
+        if (self.default_size not in {"256x256", "512x512", "1024x1024"} and self.default_model == DALLE_MODELS[1]) or (
+            self.___default_size not in {"1024x1024", "1792x1024", "1024x1792"}
+            and self.default_model == DALLE_MODELS[0]
+        ):
+            self.___logger.error("Image size is invalid!")
+            return False
+        return True
+
+    def ___validate_model(self):
+        """
+        Validate model.
+
+        :return: True if model is valid, False otherwise.
+        """
+        self.___logger.debug("Validating model...")
+        if self.default_model not in DALLE_MODELS:
+            self.___logger.error("Model is invalid!")
+            return False
+        return True

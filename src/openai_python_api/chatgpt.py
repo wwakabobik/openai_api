@@ -614,6 +614,7 @@ class ChatGPT:
         """
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-statements
+        # pylint: disable=too-many-locals
         uid = str(uuid4())
         self.___logger.debug(
             "Processing chat '%s' with prompt '%s', tracking choice %s with uid=%s",
