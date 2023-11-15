@@ -30,21 +30,7 @@ from .models import DALLE_MODELS
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 class DALLE:
-    """
-    The DALLE class is for managing an instance of the DALLE model.
-
-    Parameters:
-    auth_token (str): Authentication bearer token. Required.
-    organization (str): Organization uses auth toke. Required.
-    default_count (int): Default count of images to produce. Default is 1.
-    default_size (Literal): Default dimensions for output images. Default is "512x512".
-    default_file_format (str): Default file format. Optional. Default is 'PNG'.
-    user (str, optional): The user ID. Default is ''.
-    model (str, optional): The model ID. Default is 'dall-e-3'.
-    quality (str, optional): The quality of the image. Default is 'hd'. Possible values: 'hd', 'standard'.
-    style (str, optional): The style of the image. Default is 'natural'. Possible values: 'vivid', 'natural'.
-    logger (logging.Logger, optional): default logger. Default is None.
-    """
+    """The DALLE class is for managing an instance of the DALLE model."""
 
     def __init__(
         self,
@@ -72,6 +58,10 @@ class DALLE:
         :param quality: The quality of the image. Optional. Default is 'hd'. Possible values: 'hd', 'standard'.
         :param style: The style of the image. Optional. Default is 'natural'. Possible values: 'vivid', 'natural'.
         :param logger: default logger. Optional. Default is None.
+        :raises: ValueError: If invalid settings provided.
+
+        Raises:
+            ValueError: If invalid settings provided.
         """
         self.___logger = logger if logger is not None else setup_logger("DALLE", "dalle.log", logging.DEBUG)
         self.___logger.debug("DALLE init")
@@ -258,8 +248,8 @@ class DALLE:
         :return: True if image size is valid, False otherwise.
         """
         self.___logger.debug("Validating image size...")
-        if (self.default_size not in ["256x256", "512x512", "1024x1024"] and self.default_model == DALLE_MODELS[1]) or (
-            self.___default_size not in ["1024x1024", "1792x1024", "1024x1792"]
+        if (self.default_size not in {"256x256", "512x512", "1024x1024"} and self.default_model == DALLE_MODELS[1]) or (
+            self.___default_size not in {"1024x1024", "1792x1024", "1024x1792"}
             and self.default_model == DALLE_MODELS[0]
         ):
             self.___logger.error("Image size is invalid!")
@@ -352,7 +342,7 @@ class DALLE:
         self.___logger.debug("Images created, total: %s", len(return_value))
         return return_value
 
-    def save_image(self, image, filename=None, file_format=None):
+    async def save_image(self, image, filename=None, file_format=None):
         """Saves an image to a file.
 
         :param image: A PIL.Image object to be saved.

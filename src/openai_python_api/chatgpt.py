@@ -717,8 +717,8 @@ class ChatGPT:
                     yield response
             except GeneratorExit:
                 self.___logger.debug("Chat ended with uid=%s", uid)
-            except Exception as error:  # pylint: disable=W0718
-                self.___logger.error("Error while processing chat: %s", error)
+            except Exception as func_error:  # pylint: disable=W0718
+                self.___logger.error("Error while processing chat: %s", func_error)
 
     async def chat(self, prompt, chat_name=None, default_choice=0, extra_settings=""):
         """
