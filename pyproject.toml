@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "openai_python_api"
-version = "0.0.5"
+version = "0.0.6"
 keywords = ["openai", "chatgpt", "dalle", "dalle2", "ai", "artificial intelligence", "api", "gpt"]
 authors = [
   { name="Iliya Vereshchagin", email="i.vereshchagin@gmail.com" },
@@ -70,6 +70,7 @@ line-length = 120
 
 [tool.flake8]
 max-line-length = 120
+max-imports = 15
 extend-ignore = """
     Q000,
     WPS306,
