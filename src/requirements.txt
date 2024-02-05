@@ -1,5 +1,5 @@
 aiofiles==23.2.1
 aiohttp==3.9.3
 asyncio==3.4.3
-openai==1.10.0
+openai==1.11.1
 pillow==10.2.0
