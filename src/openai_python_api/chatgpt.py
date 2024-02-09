@@ -5,7 +5,7 @@ Author: Iliya Vereshchagin
 Copyright (c) 2023. All rights reserved.
 
 Created: 25.08.2023
-Last Modified: 15.11.2023
+Last Modified: 09.02.2024
 
 Description:
 This file contains implementation for ChatGPT.
@@ -742,6 +742,7 @@ class ChatGPT:
         )
         # Call process_chat
         full_prompt = ""
+        prompt_response = None
         if self.prompt_method:
             try:
                 async for response in self.process_chat(prompt=prompt, default_choice=default_choice):
@@ -770,17 +771,18 @@ class ChatGPT:
             messages.insert(0, {"role": "system", "content": f"{self.system_settings} {extra_settings}"})
 
             try:
+
                 async for prompt_response in self.process_chat(  # noqa: WPS352
                     prompt=messages, default_choice=default_choice, chat_name=chat_name
                 ):
                     if isinstance(prompt_response, dict):
                         finish_reason = prompt_response["choices"][default_choice].get("finish_reason", "")
-                        yield prompt_response
                         if self.stream:
                             if "content" in prompt_response["choices"][default_choice]["delta"].keys():
                                 full_prompt += prompt_response["choices"][default_choice]["delta"]["content"]
                         else:
                             full_prompt += prompt_response["choices"][default_choice]["message"]["content"]
+                        yield prompt_response
                         if finish_reason is not None:
                             yield ""
                     else:
