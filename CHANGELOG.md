@@ -43,3 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Updated
 - Requirements updated
 - GA actions updated
+
+## [0.0.8] - 2024-02-09
+
+### Updated
+- Fixed history storage for assistant (i.g. non-stream)
