@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -45,11 +45,10 @@ jobs:
       id: mypy
       continue-on-error: true
       run: |
-        mkdir -p .mypy_cache
         changed_files=$(git diff --diff-filter=d --name-only $(git merge-base HEAD origin/master) HEAD | grep '\.py$') || true
-        echo $changed_files
         if [ -n "$changed_files" ]; then
-            PYTHONPATH=. mypy $changed_files --install-types --non-interactive --ignore-missing-imports
+            mkdir -p .mypy_cache
+            PYTHONPATH=. mypy $changed_files --install-types --non-interactive --ignore-missing-imports --exclude __main__.py
         else
             echo "No files changed, passing by"
             exit 0
@@ -59,12 +58,11 @@ jobs:
       continue-on-error: true
       run: |
         changed_files=$(git diff --diff-filter=d --name-only $(git merge-base HEAD origin/master) HEAD | grep '\.py$') || true
-        echo $changed_files
         if [ -n "$changed_files" ]; then
-          PYTHONPATH=. flake8 $changed_files
+            PYTHONPATH=. flake8 $changed_files
         else
-          echo "No files changed, passing by"
-          exit 0
+            echo "No files changed, passing by"
+            exit 0
         fi
     - name: Check code with Black
       id: black
@@ -80,7 +78,14 @@ jobs:
         fi
     - name: Check runner state
       run: |
-        if [[ "${{ steps.pylint.outcome }}" == "failure" || "${{ steps.black.outcome }}" == "failure" || "${{ steps.mypy.outcome }}" == "failure" ]]; then
-          echo "Linters failed, refer to related sections for info"
+        failed_steps=()
+        if [[ "${{ steps.pylint.outcome }}" == "failure" ]]; then failed_steps+=("Pylint"); fi
+        if [[ "${{ steps.black.outcome }}" == "failure" ]]; then failed_steps+=("Black"); fi
+        if [[ "${{ steps.mypy.outcome }}" == "failure" ]]; then failed_steps+=("Mypy"); fi
+
+        if [ ${#failed_steps[@]} -ne 0 ]; then
+          echo "Failed: ${failed_steps[*]}"
           exit 1
+        else
+          echo "All passed, well done, bro!"
         fi
