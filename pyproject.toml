@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "openai_python_api"
-version = "0.0.8"
+version = "0.0.9"
 keywords = ["openai", "chatgpt", "dalle", "dalle2", "ai", "artificial intelligence", "api", "gpt"]
 authors = [
   { name="Iliya Vereshchagin", email="i.vereshchagin@gmail.com" },
@@ -34,6 +34,8 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",

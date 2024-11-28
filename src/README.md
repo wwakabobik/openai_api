@@ -2,7 +2,12 @@
 
 This package provides a Python API for [OpenAI](https://openai.com/), based on the official [API documentation](https://openai.com/blog/openai-api) and wraps-up original [OpenAI API](https://pypi.org/project/openai/).
 
-[![PyPI version](https://badge.fury.io/py/openai-python-api.svg)](https://badge.fury.io/py/openai-python-api) [![Linters](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml/badge.svg?branch=master)](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml)
+[![PyPI version](https://badge.fury.io/py/openai-python-api.svg)](https://badge.fury.io/py/openai-python-api) 
+[![Linters](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml/badge.svg?branch=master)](https://github.com/wwakabobik/openai_api/actions/workflows/master_linters.yml)
+![PyPI - License](https://img.shields.io/pypi/l/openai-python-api)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/openai-python-api) 
+[![Downloads](https://static.pepy.tech/badge/openai-python-api)](https://pepy.tech/project/openai-python-api)
+[![Downloads](https://static.pepy.tech/badge/openai-python-api/month)](https://pepy.tech/project/openai-python-api)
 
 ## Installation
 

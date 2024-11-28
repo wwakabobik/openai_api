@@ -48,3 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Updated
 - Fixed history storage for assistant (i.g. non-stream)
+
+## [0.0.9] - 2024-02-09
+
+### Updated
+- README.md, LICENSE and GitHub actions (to check only changed files)
