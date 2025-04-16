@@ -53,3 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Updated
 - README.md, LICENSE and GitHub actions (to check only changed files)
+
+## [0.1.0] - 2025-04-16
+- README.md, requirements.txt
