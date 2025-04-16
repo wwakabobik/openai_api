@@ -7,6 +7,7 @@ ChatGPT:
 - Add TTS
 - Add models API
 - Add files
+- Add reasoning
 
 DALL-E2:
 - Add synchronous library (requests)
