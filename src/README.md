@@ -9,6 +9,12 @@ This package provides a Python API for [OpenAI](https://openai.com/), based on t
 [![Downloads](https://static.pepy.tech/badge/openai-python-api)](https://pepy.tech/project/openai-python-api)
 [![Downloads](https://static.pepy.tech/badge/openai-python-api/month)](https://pepy.tech/project/openai-python-api)
 
+# ⚠️ Project Status Notice
+
+This project is no longer under active development or maintenance since 2024-04-16. I initially created this package to explore the OpenAI API and its capabilities, but I've decided to discontinue further work on it as I’ve transitioned to using third-party tools that better suit my current needs. That said, I still believe this project has value, and I’d be happy to see it live on in capable hands.
+
+If you're interested in becoming a maintainer or continuing development, feel free to reach out — I'd be glad to pass the torch.
+
 ## Installation
 
 To install the package, use the package from [pypi](https://pypi.org/project/openai-api/):
